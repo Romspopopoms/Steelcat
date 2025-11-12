@@ -6,6 +6,9 @@ import { loadStripe } from '@stripe/stripe-js';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
+// Force dynamic rendering to prevent build errors with useSearchParams
+export const dynamic = 'force-dynamic';
+
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
