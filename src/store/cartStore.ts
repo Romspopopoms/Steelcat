@@ -1,0 +1,124 @@
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  weight: string;
+  image: string;
+}
+
+interface CartStore {
+  items: CartItem[];
+  isOpen: boolean;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
+  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
+  toggleCart: () => void;
+  openCart: () => void;
+  closeCart: () => void;
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
+}
+
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      isOpen: false,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => {
+        set({ _hasHydrated: state });
+      },
+
+      addItem: (item) => {
+        const existingItem = get().items.find(
+          (i) => i.id === item.id && i.weight === item.weight
+        );
+
+        if (existingItem) {
+          set({
+            items: get().items.map((i) =>
+              i.id === item.id && i.weight === item.weight
+                ? { ...i, quantity: i.quantity + (item.quantity || 1) }
+                : i
+            ),
+          });
+        } else {
+          set({
+            items: [...get().items, { ...item, quantity: item.quantity || 1 }],
+          });
+        }
+      },
+
+      removeItem: (id) => {
+        set({
+          items: get().items.filter((item) => item.id !== id),
+        });
+      },
+
+      updateQuantity: (id, quantity) => {
+        if (quantity <= 0) {
+          get().removeItem(id);
+          return;
+        }
+
+        set({
+          items: get().items.map((item) =>
+            item.id === id ? { ...item, quantity } : item
+          ),
+        });
+      },
+
+      clearCart: () => {
+        set({ items: [] });
+      },
+
+      toggleCart: () => {
+        set({ isOpen: !get().isOpen });
+      },
+
+      openCart: () => {
+        set({ isOpen: true });
+      },
+
+      closeCart: () => {
+        set({ isOpen: false });
+      },
+
+      getTotalItems: () => {
+        return get().items.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      getTotalPrice: () => {
+        return get().items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0
+        );
+      },
+    }),
+    {
+      name: 'steelcat-cart-storage',
+      storage: createJSONStorage(() => {
+        if (typeof window !== 'undefined') {
+          return localStorage;
+        }
+        // Fallback pour le SSR
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        };
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    }
+  )
+);
