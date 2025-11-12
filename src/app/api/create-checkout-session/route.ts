@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-10-29.clover',
-});
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not set');
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-10-29.clover',
+  });
+}
 
 export async function POST(request: NextRequest) {
+  const stripe = getStripe();
   try {
     const body = await request.json();
     const { items, customerInfo } = body;
