@@ -26,7 +26,7 @@ export async function GET() {
       prisma.product.findMany(),
     ]);
 
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+    const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0);
     const preOrders = await prisma.order.count({
       where: { isPreOrder: true, status: 'PRE_ORDER' },
     });
