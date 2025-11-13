@@ -213,7 +213,7 @@ export default function ProductPage() {
                 {/* Badge promo */}
                 {selectedProduct.hasPromo && promoRemaining !== null && promoRemaining > 0 && (
                   <div className="inline-block bg-red-100 text-red-800 px-4 py-2 rounded-lg font-semibold text-sm mb-4">
-                    Promo : Plus que {promoRemaining} places restantes !
+                    Promo : Plus que {promoRemaining} articles restants !
                   </div>
                 )}
 
@@ -301,7 +301,7 @@ export default function ProductPage() {
                               <div className="text-xs text-red-600">❌ Rupture de stock</div>
                             )}
                             {promoRemaining !== null && promoRemaining > 0 && (
-                              <div className="text-xs text-red-600">🔥 Plus que {promoRemaining} en promo</div>
+                              <div className="text-xs text-red-600">🔥 Plus que {promoRemaining} articles en promo</div>
                             )}
                           </div>
                           <div className="text-right">
