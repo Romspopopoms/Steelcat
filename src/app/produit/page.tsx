@@ -336,17 +336,17 @@ export default function ProductPage() {
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-12 border-2 border-gray-200 rounded-lg hover:border-gray-400 font-semibold disabled:opacity-50"
+                    className="w-12 h-12 border-2 border-gray-300 rounded-lg hover:border-gray-400 font-semibold disabled:opacity-50 text-black bg-white hover:bg-gray-50"
                     disabled={isOutOfStock}
                   >
                     -
                   </button>
-                  <span className="text-2xl font-semibold w-12 text-center">
+                  <span className="text-2xl font-semibold w-12 text-center text-black">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity(Math.min(selectedProduct.stock, quantity + 1))}
-                    className="w-12 h-12 border-2 border-gray-200 rounded-lg hover:border-gray-400 font-semibold disabled:opacity-50"
+                    className="w-12 h-12 border-2 border-gray-300 rounded-lg hover:border-gray-400 font-semibold disabled:opacity-50 text-black bg-white hover:bg-gray-50"
                     disabled={isOutOfStock}
                   >
                     +
