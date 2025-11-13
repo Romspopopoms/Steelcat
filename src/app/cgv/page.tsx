@@ -18,6 +18,19 @@ export default function CGVPage() {
 
           <div className="prose prose-lg max-w-none space-y-8">
             <section>
+              <h2 className="text-2xl font-bold text-black mb-4">Informations légales</h2>
+              <p className="text-gray-700 leading-relaxed mb-2">
+                <strong>Raison sociale :</strong> SteelCat
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-2">
+                <strong>SIREN :</strong> 990723421
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                <strong>SIRET :</strong> 99072342100014
+              </p>
+            </section>
+
+            <section>
               <h2 className="text-2xl font-bold text-black mb-4">1. Objet</h2>
               <p className="text-gray-700 leading-relaxed">
                 Les présentes Conditions Générales de Vente (CGV) régissent les

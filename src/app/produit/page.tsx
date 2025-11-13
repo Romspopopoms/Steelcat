@@ -236,16 +236,16 @@ export default function ProductPage() {
               </div>
 
               <div className="border-t border-b border-gray-200 py-6">
-                <div className="prose prose-lg max-w-none">
+                <div className="max-w-none">
                   <h3 className="text-xl font-bold text-gray-900 mb-4">SteelCat</h3>
                   <p className="text-gray-700 leading-relaxed mb-4">
                     Conçue en acier inoxydable premium, la litière SteelCat offre une hygiène incomparable et une durabilité exceptionnelle. Son système de tamis intégré permet une évacuation rapide et naturelle des déchets, simplifiant drastiquement le nettoyage et garantissant un environnement toujours propre pour votre chat.
                   </p>
                   <p className="text-gray-700 leading-relaxed mb-4">
-                    <strong>Pour une performance optimale</strong>, nous recommandons l'utilisation de <strong>pellets de bois</strong>. Considérés comme l'une des meilleures litières naturelles, les pellets sont <strong>100 % végétaux, sans toxines ni produits chimiques</strong>, et respectent parfaitement la santé de votre compagnon. Au contact de l'urine, ils se transforment en une fine poussière qui tombe immédiatement à travers le tamis, laissant la partie supérieure propre, sèche et confortable.
+                    <strong>Pour une performance optimale</strong>, nous recommandons l&apos;utilisation de <strong>pellets de bois</strong>. Considérés comme l&apos;une des meilleures litières naturelles, les pellets sont <strong>100 % végétaux, sans toxines ni produits chimiques</strong>, et respectent parfaitement la santé de votre compagnon. Au contact de l&apos;urine, ils se transforment en une fine poussière qui tombe immédiatement à travers le tamis, laissant la partie supérieure propre, sèche et confortable.
                   </p>
                   <p className="text-gray-700 leading-relaxed mb-4">
-                    Contrairement aux litières agglomérantes traditionnelles — souvent composées de poussières minérales et d'additifs qui peuvent être irritants ou toxiques pour les voies respiratoires des chats — les pellets de bois offrent une solution saine, écologique et sans danger.
+                    Contrairement aux litières agglomérantes traditionnelles — souvent composées de poussières minérales et d&apos;additifs qui peuvent être irritants ou toxiques pour les voies respiratoires des chats — les pellets de bois offrent une solution saine, écologique et sans danger.
                   </p>
                   <p className="text-gray-700 leading-relaxed">
                     <strong>SteelCat</strong> combine ainsi un design premium, une hygiène irréprochable et une litière 100 % naturelle pour garantir à votre chat un confort maximal au quotidien.
