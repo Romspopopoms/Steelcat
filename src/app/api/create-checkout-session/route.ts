@@ -40,16 +40,15 @@ export async function POST(request: NextRequest) {
       quantity: item.quantity,
     }));
 
-    // Add shipping if needed
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-    if (subtotal < 50) {
+    // Add shipping if needed (shipping is already calculated from client)
+    if (shipping && shipping > 0) {
       lineItems.push({
         price_data: {
           currency: 'eur',
           product_data: {
             name: 'Frais de livraison',
           },
-          unit_amount: 590, // 5.90€
+          unit_amount: Math.round(shipping * 100), // Convert to cents
         },
         quantity: 1,
       });
