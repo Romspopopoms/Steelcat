@@ -30,7 +30,7 @@ export async function GET() {
     const preOrders = await prisma.order.count({
       where: { isPreOrder: true, status: 'PRE_ORDER' },
     });
-    const lowStockProducts = products.filter(p => p.stock < 20).length;
+    const lowStockProducts = products.filter((p: any) => p.stock < 20).length;
 
     return NextResponse.json({
       totalOrders,
