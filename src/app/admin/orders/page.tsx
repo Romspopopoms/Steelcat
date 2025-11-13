@@ -62,7 +62,7 @@ export default function OrdersManagementPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const badges: Record<string, JSX.Element> = {
+    const badges: Record<string, React.ReactElement> = {
       PENDING: <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">En attente</span>,
       PAID: <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">Payée</span>,
       PRE_ORDER: <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">Précommande</span>,
