@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import prisma from '@/lib/prisma';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
   const stripe = getStripe();
   try {
     const body = await request.json();
-    const { items, customerInfo } = body;
+    const { items, customerInfo, subtotal, shipping, total } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -70,7 +71,53 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ sessionId: session.id, url: session.url });
+    // Créer la commande en PENDING dans la base de données
+    const orderNumber = `SC${Date.now()}`;
+    let isPreOrder = false;
+    let estimatedDelivery: Date | null = null;
+
+    // Vérifier si la commande contient des précommandes
+    for (const item of items) {
+      if (item.status === 'PRE_ORDER') {
+        isPreOrder = true;
+        if (item.availableDate && (!estimatedDelivery || new Date(item.availableDate) > estimatedDelivery)) {
+          estimatedDelivery = new Date(item.availableDate);
+        }
+      }
+    }
+
+    await prisma.order.create({
+      data: {
+        orderNumber,
+        status: 'PENDING',
+        email: customerInfo.email,
+        firstName: customerInfo.firstName,
+        lastName: customerInfo.lastName,
+        phone: customerInfo.phone,
+        address: customerInfo.address,
+        city: customerInfo.city,
+        postalCode: customerInfo.postalCode,
+        subtotal,
+        shipping,
+        total,
+        stripeSessionId: session.id,
+        isPreOrder,
+        estimatedDelivery,
+        items: {
+          create: items.map((item: any) => ({
+            productId: item.id,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            totalPrice: item.price * item.quantity,
+            productName: item.name,
+            productWeight: item.weight,
+            productStatus: item.status || 'IN_STOCK',
+          })),
+        },
+      },
+    });
+
+    return NextResponse.json({ sessionId: session.id, url: session.url, orderNumber });
   } catch (error: any) {
     console.error('Error creating checkout session:', error);
     return NextResponse.json(

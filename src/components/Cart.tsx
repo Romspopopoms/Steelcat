@@ -112,7 +112,20 @@ export default function Cart() {
                     <h3 className="font-semibold text-sm mb-1 truncate text-black">
                       {item.name}
                     </h3>
-                    <p className="text-xs text-gray-500 mb-2">{item.weight}</p>
+                    <p className="text-xs text-gray-500 mb-1">{item.weight}</p>
+
+                    {/* Badge précommande */}
+                    {item.status === 'PRE_ORDER' && (
+                      <div className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded mb-1">
+                        Précommande
+                        {item.availableDate && (
+                          <span className="ml-1">
+                            - Dispo le {new Date(item.availableDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     <p className="text-sm font-bold text-black">{item.price.toFixed(2)} €</p>
 
                     {/* Quantity Controls */}

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+export type ProductStatus = 'IN_STOCK' | 'PRE_ORDER' | 'OUT_OF_STOCK';
+
 export interface CartItem {
   id: string;
   name: string;
@@ -8,6 +10,8 @@ export interface CartItem {
   quantity: number;
   weight: string;
   image: string;
+  status?: ProductStatus;
+  availableDate?: string | null;
 }
 
 interface CartStore {

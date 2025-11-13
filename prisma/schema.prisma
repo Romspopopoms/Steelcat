@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ProductStatus {
+  IN_STOCK
+  PRE_ORDER
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PRE_ORDER
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Product {
+  id                  String         @id @default(cuid())
+  name                String
+  description         String
+  weight              String         // "5kg", "10kg", "15kg"
+  status              ProductStatus  @default(IN_STOCK)
+  stock               Int            @default(0)
+
+  // Prix
+  originalPrice       Float          // Prix de base (ex: 125€)
+  currentPrice        Float          // Prix actuel/promo (ex: 99.90€)
+  hasPromo            Boolean        @default(false)
+  promoLimit          Int?           // Limite de quantité en promo (ex: 20)
+  promoSold           Int            @default(0) // Nombre vendu en promo
+
+  // Précommande
+  availableDate       DateTime?      // Date de disponibilité estimée pour précommande
+  preOrderLimit       Int?           // Limite de précommandes acceptées
+  preOrderCount       Int            @default(0) // Nombre de précommandes
+
+  // Images et infos
+  images              String[]       // Array d'URLs d'images
+  featured            Boolean        @default(false)
+  popular             Boolean        @default(false)
+
+  // Relations
+  orderItems          OrderItem[]
+
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([status])
+  @@index([weight])
+}
+
+model Order {
+  id                  String         @id @default(cuid())
+  orderNumber         String         @unique // Ex: SC1234567890
+  status              OrderStatus    @default(PENDING)
+
+  // Informations client
+  email               String
+  firstName           String
+  lastName            String
+  phone               String
+  address             String
+  city                String
+  postalCode          String
+
+  // Montants
+  subtotal            Float
+  shipping            Float
+  total               Float
+
+  // Paiement Stripe
+  stripeSessionId     String?        @unique
+  stripePaymentIntent String?
+  paidAt              DateTime?
+
+  // Dates importantes
+  estimatedDelivery   DateTime?      // Date estimée de livraison
+  shippedAt           DateTime?
+  deliveredAt         DateTime?
+
+  // Flags
+  isPreOrder          Boolean        @default(false) // Si la commande contient des précommandes
+  notificationSent    Boolean        @default(false) // Si email de dispo envoyé
+
+  // Relations
+  items               OrderItem[]
+
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([isPreOrder])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id                  String         @id @default(cuid())
+
+  // Relations
+  orderId             String
+  order               Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId           String
+  product             Product        @relation(fields: [productId], references: [id])
+
+  // Détails au moment de l'achat
+  quantity            Int
+  unitPrice           Float          // Prix unitaire au moment de l'achat
+  totalPrice          Float          // quantity * unitPrice
+
+  // Snapshot des infos produit
+  productName         String
+  productWeight       String
+  productStatus       ProductStatus  // Status au moment de l'achat
+
+  createdAt           DateTime       @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Admin {
+  id                  String         @id @default(cuid())
+  email               String         @unique
+  name                String
+  password            String         // Hash bcrypt
+
+  // Permissions (pour évolutions futures)
+  canManageProducts   Boolean        @default(true)
+  canManageOrders     Boolean        @default(true)
+  canViewAnalytics    Boolean        @default(true)
+
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([email])
+}

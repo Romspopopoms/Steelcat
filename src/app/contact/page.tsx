@@ -253,7 +253,10 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-black mb-2">Email</h3>
-                    <p className="text-gray-600">contact@steelcat.fr</p>
+                    <p className="text-gray-600">À définir</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Réponse sous 24h
+                    </p>
                   </div>
                 </div>
               </div>
@@ -278,7 +281,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-black mb-2">Téléphone</h3>
-                    <p className="text-gray-600">01 23 45 67 89</p>
+                    <p className="text-gray-600">À définir</p>
                     <p className="text-sm text-gray-500 mt-1">
                       Lun-Ven: 9h-18h
                     </p>
@@ -313,11 +316,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-black mb-2">Adresse</h3>
                     <p className="text-gray-600">
-                      123 Rue du Commerce
-                      <br />
-                      75001 Paris
-                      <br />
-                      France
+                      À définir
                     </p>
                   </div>
                 </div>
