@@ -58,7 +58,7 @@ export async function PATCH(
           orderNumber: order.orderNumber,
           customerName: `${order.firstName} ${order.lastName}`,
           email: order.email,
-          items: order.items.map(item => ({
+          items: order.items.map((item: any) => ({
             name: item.productName,
             weight: item.productWeight,
           })),
