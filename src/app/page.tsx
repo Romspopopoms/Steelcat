@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ProductGallery from "@/components/ProductGallery";
-import ProductFeatures from "@/components/ProductFeatures";
+import WhyChoose from "@/components/WhyChoose";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -11,7 +11,7 @@ export default function Home() {
       <main className="flex-grow">
         <Hero />
         <ProductGallery />
-        <ProductFeatures />
+        <WhyChoose />
       </main>
       <Footer />
     </div>
