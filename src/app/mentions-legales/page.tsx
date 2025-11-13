@@ -46,15 +46,12 @@ export default function MentionsLegalesPage() {
                   Paris, France
                 </p>
                 <p>
-                  <strong>Téléphone :</strong> 01 23 45 67 89
-                </p>
-                <p>
                   <strong>Email :</strong>{' '}
                   <a
-                    href="mailto:contact@steelcat.fr"
+                    href="mailto:sav@steel-cat.com"
                     className="text-black font-semibold hover:underline"
                   >
-                    contact@steelcat.fr
+                    sav@steel-cat.com
                   </a>
                 </p>
                 <p>
@@ -195,7 +192,7 @@ export default function MentionsLegalesPage() {
               <p className="text-gray-700 leading-relaxed">
                 La création de liens hypertextes vers ce site est soumise à
                 l&apos;accord préalable de SteelCat. Pour toute demande,
-                contactez-nous à contact@steelcat.fr.
+                contactez-nous à sav@steel-cat.com.
               </p>
             </section>
 

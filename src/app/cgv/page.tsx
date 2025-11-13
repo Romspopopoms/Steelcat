@@ -135,7 +135,7 @@ export default function CGVPage() {
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 Pour exercer ce droit, contactez-nous à l&apos;adresse
-                contact@steelcat.fr. Les produits doivent être retournés dans
+                sav@steel-cat.com. Les produits doivent être retournés dans
                 leur emballage d&apos;origine, en parfait état.
               </p>
               <p className="text-gray-700 leading-relaxed">
@@ -167,8 +167,7 @@ export default function CGVPage() {
                 Pour toute réclamation, merci de nous contacter :
               </p>
               <ul className="list-none text-gray-700 space-y-1">
-                <li>• Par email : contact@steelcat.fr</li>
-                <li>• Par téléphone : 01 23 45 67 89</li>
+                <li>• Par email : sav@steel-cat.com</li>
                 <li>• Par courrier : SteelCat, 123 Rue du Commerce, 75001 Paris</li>
               </ul>
             </section>

@@ -6,7 +6,10 @@
       "Bash(npm install:*)",
       "Bash(npx prisma init:*)",
       "Bash(npx prisma migrate:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(git push:*)",
+      "Bash(vercel env add:*)",
+      "Bash(vercel env:*)"
     ],
     "deny": [],
     "ask": []

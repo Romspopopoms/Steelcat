@@ -29,8 +29,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>Email: contact@steelcat.fr</li>
-              <li>Tél: +33 1 23 45 67 89</li>
+              <li>Email: sav@steel-cat.com</li>
               <li className="pt-4 flex gap-4">
                 <a href="#" className="hover:text-white transition-colors" aria-label="Facebook">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

@@ -50,17 +50,25 @@ export default function ProductPage() {
     try {
       const response = await fetch('/api/products');
       const data = await response.json();
-      setProducts(data.products);
 
-      // Sélectionner le produit populaire par défaut (10kg)
-      const popularProduct = data.products.find((p: Product) => p.popular);
-      if (popularProduct) {
-        setSelectedProductId(popularProduct.id);
-      } else if (data.products.length > 0) {
-        setSelectedProductId(data.products[0].id);
+      // Vérifier que data.products existe et est un tableau
+      if (data.products && Array.isArray(data.products)) {
+        setProducts(data.products);
+
+        // Sélectionner le produit populaire par défaut (10kg)
+        const popularProduct = data.products.find((p: Product) => p.popular);
+        if (popularProduct) {
+          setSelectedProductId(popularProduct.id);
+        } else if (data.products.length > 0) {
+          setSelectedProductId(data.products[0].id);
+        }
+      } else {
+        console.error('Error fetching products: Invalid data format', data);
+        setProducts([]);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
