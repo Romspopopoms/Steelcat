@@ -75,35 +75,43 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Confirmation de commande</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+      <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <!-- Header -->
-        <div style="background-color: #000000; padding: 32px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 28px;">SteelCat</h1>
+        <div style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); padding: 40px 32px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: 1px;">STEELCAT</h1>
+          <p style="color: #cccccc; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 0.5px;">LITIÈRE PREMIUM</p>
+        </div>
+
+        <!-- Success Badge -->
+        <div style="text-align: center; padding: 24px 32px 0 32px;">
+          <div style="display: inline-block; background-color: #10B981; color: white; padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 14px;">
+            ✓ COMMANDE CONFIRMÉE
+          </div>
         </div>
 
         <!-- Content -->
         <div style="padding: 32px;">
-          <h2 style="color: #000000; margin: 0 0 16px 0;">Merci pour votre commande !</h2>
-          <p style="color: #666666; margin: 0 0 24px 0;">
-            Bonjour ${data.customerName},
+          <h2 style="color: #000000; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Merci pour votre commande !</h2>
+          <p style="color: #4B5563; margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+            Bonjour <strong>${data.customerName}</strong>,
           </p>
-          <p style="color: #666666; margin: 0 0 24px 0;">
-            Nous avons bien reçu votre commande <strong>${data.orderNumber}</strong> et nous vous remercions de votre confiance.
+          <p style="color: #4B5563; margin: 0 0 24px 0; font-size: 15px; line-height: 1.6;">
+            Nous avons bien reçu votre commande <strong style="color: #000;">#${data.orderNumber}</strong> et votre paiement a été confirmé. Nous préparons votre colis avec le plus grand soin.
           </p>
 
           ${deliveryInfo}
 
           <!-- Order Details -->
-          <div style="background-color: #f9f9f9; padding: 24px; border-radius: 8px; margin: 24px 0;">
-            <h3 style="margin: 0 0 16px 0; color: #000000;">Détails de la commande</h3>
+          <div style="background-color: #F9FAFB; padding: 24px; border-radius: 12px; margin: 24px 0; border: 1px solid #E5E7EB;">
+            <h3 style="margin: 0 0 20px 0; color: #000000; font-size: 18px; font-weight: 700;">Détails de la commande</h3>
             <table style="width: 100%; border-collapse: collapse;">
               <thead>
-                <tr>
-                  <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd; color: #666;">Produit</th>
-                  <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd; color: #666;">Qté</th>
-                  <th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd; color: #666;">Prix unit.</th>
-                  <th style="padding: 12px; text-align: right; border-bottom: 2px solid #ddd; color: #666;">Total</th>
+                <tr style="background-color: #E5E7EB;">
+                  <th style="padding: 12px 8px; text-align: left; font-size: 13px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">Produit</th>
+                  <th style="padding: 12px 8px; text-align: center; font-size: 13px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">Qté</th>
+                  <th style="padding: 12px 8px; text-align: right; font-size: 13px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">Prix unit.</th>
+                  <th style="padding: 12px 8px; text-align: right; font-size: 13px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -111,36 +119,46 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="3" style="padding: 12px; text-align: right; color: #666;">Sous-total</td>
-                  <td style="padding: 12px; text-align: right; font-weight: 600;">${data.subtotal.toFixed(2)}€</td>
+                  <td colspan="3" style="padding: 12px 8px; text-align: right; color: #6B7280; font-size: 14px;">Sous-total</td>
+                  <td style="padding: 12px 8px; text-align: right; font-weight: 600; font-size: 14px;">${data.subtotal.toFixed(2)}€</td>
                 </tr>
                 <tr>
-                  <td colspan="3" style="padding: 12px; text-align: right; color: #666;">Frais de livraison</td>
-                  <td style="padding: 12px; text-align: right; font-weight: 600;">${data.shipping.toFixed(2)}€</td>
+                  <td colspan="3" style="padding: 12px 8px; text-align: right; color: #6B7280; font-size: 14px;">Frais de livraison</td>
+                  <td style="padding: 12px 8px; text-align: right; font-weight: 600; font-size: 14px; color: ${data.shipping === 0 ? '#10B981' : '#000'};">${data.shipping === 0 ? 'GRATUIT' : data.shipping.toFixed(2) + '€'}</td>
                 </tr>
-                <tr>
-                  <td colspan="3" style="padding: 12px; text-align: right; border-top: 2px solid #000; font-size: 18px; font-weight: 600;">Total</td>
-                  <td style="padding: 12px; text-align: right; border-top: 2px solid #000; font-size: 18px; font-weight: 600;">${data.total.toFixed(2)}€</td>
+                <tr style="background-color: #F3F4F6;">
+                  <td colspan="3" style="padding: 16px 8px; text-align: right; border-top: 2px solid #000; font-size: 18px; font-weight: 700;">TOTAL</td>
+                  <td style="padding: 16px 8px; text-align: right; border-top: 2px solid #000; font-size: 20px; font-weight: 700; color: #000;">${data.total.toFixed(2)}€</td>
                 </tr>
               </tfoot>
             </table>
           </div>
 
-          <p style="color: #666666; margin: 24px 0 0 0;">
-            Vous recevrez un email de confirmation d'expédition dès que votre colis sera en route.
-          </p>
-          <p style="color: #666666; margin: 8px 0 0 0;">
-            Si vous avez des questions, n'hésitez pas à nous contacter.
+          <!-- Info Box -->
+          <div style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 16px 20px; margin: 24px 0; border-radius: 4px;">
+            <p style="margin: 0; color: #1E40AF; font-size: 14px; line-height: 1.6;">
+              <strong style="display: block; margin-bottom: 8px;">📧 Prochaines étapes</strong>
+              Vous recevrez un email de confirmation d'expédition avec le numéro de suivi dès que votre colis sera en route.
+            </p>
+          </div>
+
+          <p style="color: #6B7280; margin: 24px 0 8px 0; font-size: 14px; line-height: 1.6;">
+            Une question ? Notre équipe est là pour vous aider à <a href="mailto:sav@steel-cat.com" style="color: #000; text-decoration: none; font-weight: 600;">sav@steel-cat.com</a>
           </p>
         </div>
 
         <!-- Footer -->
-        <div style="background-color: #f9f9f9; padding: 24px; text-align: center; color: #666666; font-size: 14px;">
-          <p style="margin: 0;">© 2024 SteelCat - Litière Premium pour Chat</p>
-          <p style="margin: 8px 0 0 0;">
-            <a href="#" style="color: #666666; text-decoration: none;">Voir ma commande</a> |
-            <a href="#" style="color: #666666; text-decoration: none;">Nous contacter</a>
-          </p>
+        <div style="background-color: #F9FAFB; padding: 32px; text-align: center; border-top: 1px solid #E5E7EB;">
+          <p style="margin: 0 0 16px 0; color: #6B7280; font-size: 14px; font-weight: 600;">STEELCAT</p>
+          <p style="margin: 0 0 12px 0; color: #9CA3AF; font-size: 13px;">Litière Premium en Acier Inoxydable</p>
+          <p style="margin: 0; color: #9CA3AF; font-size: 12px;">© ${new Date().getFullYear()} SteelCat. Tous droits réservés.</p>
+          <div style="margin-top: 16px;">
+            <a href="https://steel-cat.com" style="color: #6B7280; text-decoration: none; font-size: 12px; margin: 0 8px;">Boutique</a>
+            <span style="color: #D1D5DB;">|</span>
+            <a href="mailto:sav@steel-cat.com" style="color: #6B7280; text-decoration: none; font-size: 12px; margin: 0 8px;">Contact</a>
+            <span style="color: #D1D5DB;">|</span>
+            <a href="https://steel-cat.com/cgv" style="color: #6B7280; text-decoration: none; font-size: 12px; margin: 0 8px;">CGV</a>
+          </div>
         </div>
       </div>
     </body>
@@ -179,45 +197,59 @@ export async function sendAvailabilityNotificationEmail(data: {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Votre précommande est disponible</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+      <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <!-- Header -->
-        <div style="background-color: #3B82F6; padding: 32px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 28px;">📦 Bonne nouvelle !</h1>
+        <div style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); padding: 40px 32px; text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 12px;">📦</div>
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Bonne nouvelle !</h1>
+          <p style="color: #DBEAFE; margin: 8px 0 0 0; font-size: 15px;">Votre précommande est disponible</p>
         </div>
 
         <!-- Content -->
         <div style="padding: 32px;">
-          <h2 style="color: #000000; margin: 0 0 16px 0;">Votre précommande est disponible</h2>
-          <p style="color: #666666; margin: 0 0 24px 0;">
-            Bonjour ${data.customerName},
+          <h2 style="color: #000000; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Votre commande est prête !</h2>
+          <p style="color: #4B5563; margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+            Bonjour <strong>${data.customerName}</strong>,
           </p>
-          <p style="color: #666666; margin: 0 0 24px 0;">
-            Excellente nouvelle ! Les produits de votre précommande <strong>${data.orderNumber}</strong> sont maintenant disponibles et seront expédiés dans les prochaines 24-48 heures.
+          <p style="color: #4B5563; margin: 0 0 24px 0; font-size: 15px; line-height: 1.6;">
+            Excellente nouvelle ! Les produits de votre précommande <strong style="color: #000;">#${data.orderNumber}</strong> sont maintenant disponibles et seront expédiés dans les prochaines <strong>24-48 heures</strong>.
           </p>
 
-          <div style="background-color: #EFF6FF; padding: 24px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #3B82F6;">
-            <h3 style="margin: 0 0 12px 0; color: #1E40AF;">Articles disponibles :</h3>
-            <ul style="margin: 0; padding-left: 20px; color: #1E40AF;">
+          <div style="background-color: #EFF6FF; padding: 24px; border-radius: 12px; margin: 24px 0; border-left: 4px solid #3B82F6;">
+            <h3 style="margin: 0 0 16px 0; color: #1E40AF; font-size: 16px; font-weight: 700;">Articles disponibles :</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #1E40AF; line-height: 1.8;">
               ${itemsList}
             </ul>
           </div>
 
-          <p style="color: #666666; margin: 24px 0 0 0;">
-            Vous recevrez un email de confirmation d'expédition avec le numéro de suivi dès que votre colis sera en route.
-          </p>
-          <p style="color: #666666; margin: 16px 0 0 0;">
+          <div style="background-color: #F0FDF4; border-left: 4px solid #10B981; padding: 16px 20px; margin: 24px 0; border-radius: 4px;">
+            <p style="margin: 0; color: #065F46; font-size: 14px; line-height: 1.6;">
+              <strong style="display: block; margin-bottom: 8px;">✅ Prochaines étapes</strong>
+              Vous recevrez un email de confirmation d'expédition avec le numéro de suivi dès que votre colis sera en route.
+            </p>
+          </div>
+
+          <p style="color: #4B5563; margin: 24px 0 8px 0; font-size: 15px; line-height: 1.6;">
             Merci pour votre patience et votre confiance !
+          </p>
+          <p style="color: #6B7280; margin: 16px 0 8px 0; font-size: 14px; line-height: 1.6;">
+            Une question ? Contactez-nous à <a href="mailto:sav@steel-cat.com" style="color: #000; text-decoration: none; font-weight: 600;">sav@steel-cat.com</a>
           </p>
         </div>
 
         <!-- Footer -->
-        <div style="background-color: #f9f9f9; padding: 24px; text-align: center; color: #666666; font-size: 14px;">
-          <p style="margin: 0;">© 2024 SteelCat - Litière Premium pour Chat</p>
-          <p style="margin: 8px 0 0 0;">
-            <a href="#" style="color: #666666; text-decoration: none;">Voir ma commande</a> |
-            <a href="#" style="color: #666666; text-decoration: none;">Nous contacter</a>
-          </p>
+        <div style="background-color: #F9FAFB; padding: 32px; text-align: center; border-top: 1px solid #E5E7EB;">
+          <p style="margin: 0 0 16px 0; color: #6B7280; font-size: 14px; font-weight: 600;">STEELCAT</p>
+          <p style="margin: 0 0 12px 0; color: #9CA3AF; font-size: 13px;">Litière Premium en Acier Inoxydable</p>
+          <p style="margin: 0; color: #9CA3AF; font-size: 12px;">© ${new Date().getFullYear()} SteelCat. Tous droits réservés.</p>
+          <div style="margin-top: 16px;">
+            <a href="https://steel-cat.com" style="color: #6B7280; text-decoration: none; font-size: 12px; margin: 0 8px;">Boutique</a>
+            <span style="color: #D1D5DB;">|</span>
+            <a href="mailto:sav@steel-cat.com" style="color: #6B7280; text-decoration: none; font-size: 12px; margin: 0 8px;">Contact</a>
+            <span style="color: #D1D5DB;">|</span>
+            <a href="https://steel-cat.com/cgv" style="color: #6B7280; text-decoration: none; font-size: 12px; margin: 0 8px;">CGV</a>
+          </div>
         </div>
       </div>
     </body>
