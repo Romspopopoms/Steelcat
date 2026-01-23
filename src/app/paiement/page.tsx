@@ -17,15 +17,29 @@ export default function PaiementPage() {
 
   useEffect(() => {
     const initiatePayment = async () => {
-      // Get checkout data from localStorage
-      const checkoutData = localStorage.getItem('checkoutData');
+      // Get checkout data from localStorage with safe parsing
+      const raw = localStorage.getItem('checkoutData');
 
-      if (!checkoutData) {
+      if (!raw) {
         router.push('/checkout');
         return;
       }
 
-      const data = JSON.parse(checkoutData);
+      let data: any;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        localStorage.removeItem('checkoutData');
+        router.push('/checkout');
+        return;
+      }
+
+      if (!data || !data.items || !data.customerInfo) {
+        localStorage.removeItem('checkoutData');
+        router.push('/checkout');
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
 

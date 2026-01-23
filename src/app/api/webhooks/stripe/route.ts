@@ -72,6 +72,12 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Idempotence : vérifier si la commande est déjà payée
+      if (order.status === 'PAID' || order.paidAt) {
+        console.log(`Order ${order.orderNumber} already processed, skipping (idempotent)`);
+        return NextResponse.json({ received: true });
+      }
+
       // Mettre à jour la commande dans une transaction
       await prisma.$transaction(async (tx) => {
         // Mettre à jour la commande en PAID
@@ -104,9 +110,7 @@ export async function POST(request: NextRequest) {
               where: { id: product.id },
               data: {
                 promoSold: newPromoSold,
-                // Désactiver la promo si la limite est atteinte ou dépassée
                 hasPromo: newPromoSold < product.promoLimit,
-                // Si la promo est épuisée, mettre le prix courant au prix original
                 currentPrice: newPromoSold >= product.promoLimit ? product.originalPrice : product.currentPrice,
               },
             });
@@ -124,7 +128,7 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      console.log(`✅ Order ${order.orderNumber} confirmed and paid`);
+      console.log(`Order ${order.orderNumber} confirmed and paid`);
 
       // Envoyer l'email de confirmation
       try {
@@ -144,10 +148,9 @@ export async function POST(request: NextRequest) {
           isPreOrder: order.isPreOrder,
           estimatedDelivery: order.estimatedDelivery,
         });
-        console.log(`📧 Confirmation email sent to ${order.email}`);
+        console.log(`Confirmation email sent to ${order.email}`);
       } catch (emailError) {
         console.error('Error sending confirmation email:', emailError);
-        // Ne pas faire échouer la transaction si l'email échoue
       }
     } catch (error) {
       console.error('Error processing webhook:', error);

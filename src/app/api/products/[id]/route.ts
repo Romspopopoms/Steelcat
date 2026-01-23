@@ -1,5 +1,27 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { getAdminSession } from '@/lib/auth';
+
+// Whitelist des champs modifiables
+const updateProductSchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  weight: z.string().optional(),
+  status: z.enum(['IN_STOCK', 'PRE_ORDER', 'OUT_OF_STOCK']).optional(),
+  stock: z.number().int().min(0).optional(),
+  originalPrice: z.number().positive().optional(),
+  currentPrice: z.number().positive().optional(),
+  hasPromo: z.boolean().optional(),
+  promoLimit: z.number().int().positive().nullable().optional(),
+  promoSold: z.number().int().min(0).optional(),
+  availableDate: z.string().datetime().nullable().optional(),
+  preOrderLimit: z.number().int().positive().nullable().optional(),
+  preOrderCount: z.number().int().min(0).optional(),
+  images: z.array(z.string()).optional(),
+  featured: z.boolean().optional(),
+  popular: z.boolean().optional(),
+}).strict();
 
 // GET /api/products/[id] - Récupère un produit spécifique
 export async function GET(
@@ -36,14 +58,30 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Vérification authentification admin
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Non autorisé' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
 
-    // TODO: Ajouter vérification authentification admin
+    // Validation Zod du body
+    const parseResult = updateProductSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'Données invalides', details: parseResult.error.issues },
+        { status: 400 }
+      );
+    }
 
     const product = await prisma.product.update({
       where: { id },
-      data: body,
+      data: parseResult.data,
     });
 
     return NextResponse.json({ product });

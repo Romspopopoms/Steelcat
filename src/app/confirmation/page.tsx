@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useCartStore } from '@/store/cartStore';
 
 interface OrderData {
   orderNumber: string;
@@ -34,43 +35,79 @@ interface OrderData {
 
 export default function ConfirmationPage() {
   const router = useRouter();
+  const { clearCart } = useCartStore();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('session_id');
+    const loadOrder = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get('session_id');
 
-    if (sessionId) {
-      // If coming from Stripe, get checkout data
-      const checkoutData = localStorage.getItem('checkoutData');
-      if (checkoutData) {
-        const data = JSON.parse(checkoutData);
-        const order = {
-          orderNumber: `SC${Date.now()}`,
-          items: data.items,
-          customerInfo: data.customerInfo,
-          subtotal: data.subtotal,
-          shipping: data.shipping,
-          total: data.total,
-          date: new Date().toISOString(),
-        };
-        setOrderData(order);
-        // Clean up
-        localStorage.removeItem('checkoutData');
+      if (sessionId) {
+        // Récupérer le vrai orderNumber depuis l'API
+        try {
+          const response = await fetch(`/api/orders/by-session?sessionId=${sessionId}`);
+          if (response.ok) {
+            const { order } = await response.json();
+
+            // Récupérer les données checkout pour les images
+            let checkoutItems: any[] = [];
+            try {
+              const checkoutData = localStorage.getItem('checkoutData');
+              if (checkoutData) {
+                const parsed = JSON.parse(checkoutData);
+                checkoutItems = parsed.items || [];
+              }
+            } catch {
+              // Données corrompues, on continue sans images
+            }
+
+            const orderDisplay: OrderData = {
+              orderNumber: order.orderNumber,
+              items: order.items.map((item: any) => {
+                const checkoutItem = checkoutItems.find((ci: any) => ci.id === item.productId);
+                return {
+                  id: item.productId,
+                  name: item.productName,
+                  price: item.unitPrice,
+                  quantity: item.quantity,
+                  weight: item.productWeight,
+                  image: checkoutItem?.image || '/images/product-placeholder.jpg',
+                };
+              }),
+              customerInfo: {
+                email: order.email,
+                firstName: order.firstName,
+                lastName: order.lastName,
+                address: order.address,
+                city: order.city,
+                postalCode: order.postalCode,
+                phone: order.phone,
+              },
+              subtotal: order.subtotal,
+              shipping: order.shipping,
+              total: order.total,
+              date: order.createdAt,
+            };
+
+            setOrderData(orderDisplay);
+            // Vider le panier après confirmation réussie
+            clearCart();
+            // Nettoyer le localStorage
+            localStorage.removeItem('checkoutData');
+          } else {
+            router.push('/');
+          }
+        } catch {
+          router.push('/');
+        }
       } else {
         router.push('/');
       }
-    } else {
-      // Fallback to old method (for testing without Stripe)
-      const storedOrder = localStorage.getItem('lastOrder');
-      if (storedOrder) {
-        setOrderData(JSON.parse(storedOrder));
-        localStorage.removeItem('lastOrder');
-      } else {
-        router.push('/');
-      }
-    }
-  }, [router]);
+    };
+
+    loadOrder();
+  }, [router, clearCart]);
 
   if (!orderData) {
     return (

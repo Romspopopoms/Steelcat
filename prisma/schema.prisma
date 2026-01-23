@@ -29,6 +29,11 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
 model Product {
   id                  String         @id @default(cuid())
   name                String
@@ -81,6 +86,8 @@ model Order {
   // Montants
   subtotal            Float
   shipping            Float
+  discount            Float          @default(0)
+  couponCode          String?
   total               Float
 
   // Paiement Stripe
@@ -150,4 +157,17 @@ model Admin {
   updatedAt           DateTime       @updatedAt
 
   @@index([email])
+}
+
+model Coupon {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  type        CouponType
+  value       Float      // ex: 10 (= 10% ou 10€)
+  minOrder    Float?     // Montant minimum de commande
+  maxUses     Int?       // Nombre max d'utilisations
+  usedCount   Int        @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
 }

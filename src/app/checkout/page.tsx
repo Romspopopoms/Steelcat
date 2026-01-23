@@ -29,6 +29,11 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponValid, setCouponValid] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
 
   const {
     register,
@@ -40,7 +45,43 @@ export default function CheckoutPage() {
 
   const subtotal = getTotalPrice();
   const shipping = subtotal >= 50 ? 0 : 5.9;
-  const total = subtotal + shipping;
+  const total = Math.max(0, subtotal + shipping - couponDiscount);
+
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError(null);
+    setCouponValid(null);
+    setCouponDiscount(0);
+
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode.trim(), subtotal }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setCouponError(data.error);
+      } else {
+        setCouponValid(data.coupon.code);
+        setCouponDiscount(data.coupon.discount);
+      }
+    } catch {
+      setCouponError('Erreur de validation');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponCode('');
+    setCouponDiscount(0);
+    setCouponValid(null);
+    setCouponError(null);
+  };
 
   const onSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
@@ -55,6 +96,7 @@ export default function CheckoutPage() {
           subtotal,
           shipping,
           total,
+          couponCode: couponValid || undefined,
         })
       );
 
@@ -276,6 +318,51 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {/* Code promo */}
+                <div className="bg-white p-8 rounded-2xl shadow-sm">
+                  <h2 className="text-2xl font-bold text-black mb-6">
+                    Code promo
+                  </h2>
+                  {couponValid ? (
+                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div>
+                        <span className="text-green-800 font-semibold">{couponValid}</span>
+                        <span className="text-green-600 text-sm ml-2">
+                          (-{couponDiscount.toFixed(2)} €)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="text-sm text-red-600 hover:underline"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        placeholder="Entrez votre code"
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={validateCoupon}
+                        disabled={couponLoading || !couponCode.trim()}
+                        className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                      >
+                        {couponLoading ? '...' : 'Appliquer'}
+                      </button>
+                    </div>
+                  )}
+                  {couponError && (
+                    <p className="text-red-500 text-sm mt-2">{couponError}</p>
+                  )}
+                </div>
+
                 {/* Conditions générales */}
                 <div className="bg-white p-8 rounded-2xl shadow-sm">
                   <div className="flex items-start gap-3">
@@ -372,6 +459,12 @@ export default function CheckoutPage() {
                     <p className="text-xs text-gray-500">
                       Livraison gratuite dès 50€ d&apos;achat
                     </p>
+                  )}
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Réduction ({couponValid})</span>
+                      <span>-{couponDiscount.toFixed(2)} €</span>
+                    </div>
                   )}
                   <div className="flex justify-between text-xl font-bold text-black pt-3 border-t border-gray-200">
                     <span>Total</span>
