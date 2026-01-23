@@ -33,6 +33,14 @@ export async function GET(request: NextRequest) {
     orderBy: { createdAt: 'desc' },
   });
 
+  // Sanitize CSV values to prevent formula injection
+  function sanitizeCsvValue(value: string): string {
+    if (/^[=+\-@\t\r]/.test(value)) {
+      return `'${value}`;
+    }
+    return value;
+  }
+
   // Générer le CSV
   const headers = [
     'Numéro',
@@ -56,22 +64,22 @@ export async function GET(request: NextRequest) {
   ];
 
   const rows = orders.map(order => [
-    order.orderNumber,
+    sanitizeCsvValue(order.orderNumber),
     new Date(order.createdAt).toISOString(),
     order.status,
-    order.email,
-    order.firstName,
-    order.lastName,
-    order.phone,
-    `"${order.address.replace(/"/g, '""')}"`,
-    order.city,
-    order.postalCode,
+    sanitizeCsvValue(order.email),
+    sanitizeCsvValue(order.firstName),
+    sanitizeCsvValue(order.lastName),
+    sanitizeCsvValue(order.phone),
+    `"${sanitizeCsvValue(order.address).replace(/"/g, '""')}"`,
+    sanitizeCsvValue(order.city),
+    sanitizeCsvValue(order.postalCode),
     order.subtotal.toFixed(2),
     order.shipping.toFixed(2),
     order.discount.toFixed(2),
-    order.couponCode || '',
+    order.couponCode ? sanitizeCsvValue(order.couponCode) : '',
     order.total.toFixed(2),
-    `"${order.items.map(i => `${i.productName} ${i.productWeight} x${i.quantity}`).join(', ')}"`,
+    `"${order.items.map(i => `${sanitizeCsvValue(i.productName)} ${sanitizeCsvValue(i.productWeight)} x${i.quantity}`).join(', ')}"`,
     order.isPreOrder ? 'Oui' : 'Non',
     order.paidAt ? new Date(order.paidAt).toISOString() : '',
   ]);

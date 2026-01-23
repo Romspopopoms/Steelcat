@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import Stripe from 'stripe';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+
+const customerInfoSchema = z.object({
+  email: z.string().email(),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  phone: z.string().min(1).max(30),
+  address: z.string().min(1).max(300),
+  city: z.string().min(1).max(100),
+  postalCode: z.string().min(1).max(10),
+});
 
 function getStripe() {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -18,8 +30,27 @@ function getStripe() {
 export async function POST(request: NextRequest) {
   const stripe = getStripe();
   try {
+    const ip = getRateLimitIdentifier(request);
+    const { success } = rateLimit(`checkout:${ip}`, { limit: 10, windowSeconds: 60 });
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Trop de tentatives. Réessayez dans un moment.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
-    const { items, customerInfo, couponCode } = body;
+    const { items, couponCode } = body;
+
+    // Validate customerInfo with Zod
+    const customerInfoResult = customerInfoSchema.safeParse(body.customerInfo);
+    if (!customerInfoResult.success) {
+      return NextResponse.json(
+        { error: 'Informations client invalides' },
+        { status: 400 }
+      );
+    }
+    const customerInfo = customerInfoResult.data;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -77,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     if (couponCode) {
       const coupon = await prisma.coupon.findUnique({
-        where: { code: couponCode },
+        where: { code: couponCode.toUpperCase() },
       });
 
       if (coupon && coupon.isActive) {
@@ -163,6 +194,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Annuler les commandes PENDING anciennes pour éviter les doublons
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    await prisma.order.deleteMany({
+      where: {
+        email: customerInfo.email,
+        status: 'PENDING',
+        createdAt: { lt: fiveMinutesAgo },
+        paidAt: null,
+      },
+    });
+
     // Générer un numéro de commande robuste
     const orderNumber = `SC-${randomUUID().slice(0, 8).toUpperCase()}`;
 
@@ -216,19 +258,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Incrémenter le compteur d'utilisation du coupon
-    if (appliedCoupon) {
-      await prisma.coupon.update({
-        where: { id: appliedCoupon.id },
-        data: { usedCount: { increment: 1 } },
-      });
-    }
-
     return NextResponse.json({ sessionId: session.id, url: session.url, orderNumber });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating checkout session:', error);
     return NextResponse.json(
-      { error: error.message || 'Erreur lors de la création de la session de paiement' },
+      { error: 'Erreur lors de la création de la session de paiement' },
       { status: 500 }
     );
   }

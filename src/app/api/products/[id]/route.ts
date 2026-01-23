@@ -3,6 +3,8 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // Whitelist des champs modifiables
 const updateProductSchema = z.object({
   name: z.string().min(1).optional(),

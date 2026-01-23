@@ -1,5 +1,14 @@
 import nodemailer from 'nodemailer';
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Configuration du transporteur Nodemailer
 function createTransporter() {
   return nodemailer.createTransport({
@@ -37,7 +46,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   const itemsHtml = data.items.map(item => `
     <tr>
       <td style="padding: 12px; border-bottom: 1px solid #eee;">
-        ${item.name} - ${item.weight}
+        ${escapeHtml(item.name)} - ${escapeHtml(item.weight)}
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
         ${item.quantity}
@@ -94,10 +103,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         <div style="padding: 32px;">
           <h2 style="color: #000000; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Merci pour votre commande !</h2>
           <p style="color: #4B5563; margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
-            Bonjour <strong>${data.customerName}</strong>,
+            Bonjour <strong>${escapeHtml(data.customerName)}</strong>,
           </p>
           <p style="color: #4B5563; margin: 0 0 24px 0; font-size: 15px; line-height: 1.6;">
-            Nous avons bien reçu votre commande <strong style="color: #000;">#${data.orderNumber}</strong> et votre paiement a été confirmé. Nous préparons votre colis avec le plus grand soin.
+            Nous avons bien reçu votre commande <strong style="color: #000;">#${escapeHtml(data.orderNumber)}</strong> et votre paiement a été confirmé. Nous préparons votre colis avec le plus grand soin.
           </p>
 
           ${deliveryInfo}
@@ -186,7 +195,7 @@ export async function sendAvailabilityNotificationEmail(data: {
   const transporter = createTransporter();
 
   const itemsList = data.items.map(item => `
-    <li style="margin: 8px 0;">${item.name} - ${item.weight}</li>
+    <li style="margin: 8px 0;">${escapeHtml(item.name)} - ${escapeHtml(item.weight)}</li>
   `).join('');
 
   const html = `
@@ -210,10 +219,10 @@ export async function sendAvailabilityNotificationEmail(data: {
         <div style="padding: 32px;">
           <h2 style="color: #000000; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Votre commande est prête !</h2>
           <p style="color: #4B5563; margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
-            Bonjour <strong>${data.customerName}</strong>,
+            Bonjour <strong>${escapeHtml(data.customerName)}</strong>,
           </p>
           <p style="color: #4B5563; margin: 0 0 24px 0; font-size: 15px; line-height: 1.6;">
-            Excellente nouvelle ! Les produits de votre précommande <strong style="color: #000;">#${data.orderNumber}</strong> sont maintenant disponibles et seront expédiés dans les prochaines <strong>24-48 heures</strong>.
+            Excellente nouvelle ! Les produits de votre précommande <strong style="color: #000;">#${escapeHtml(data.orderNumber)}</strong> sont maintenant disponibles et seront expédiés dans les prochaines <strong>24-48 heures</strong>.
           </p>
 
           <div style="background-color: #EFF6FF; padding: 24px; border-radius: 12px; margin: 24px 0; border-left: 4px solid #3B82F6;">

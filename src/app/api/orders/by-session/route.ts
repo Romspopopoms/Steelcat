@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/orders/by-session?sessionId=xxx - Récupérer une commande par session Stripe
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
 
-    if (!sessionId) {
+    if (!sessionId || sessionId.length < 20) {
       return NextResponse.json(
         { error: 'sessionId requis' },
         { status: 400 }
@@ -16,10 +18,24 @@ export async function GET(request: Request) {
 
     const order = await prisma.order.findUnique({
       where: { stripeSessionId: sessionId },
-      include: {
+      select: {
+        orderNumber: true,
+        status: true,
+        firstName: true,
+        subtotal: true,
+        shipping: true,
+        discount: true,
+        total: true,
+        isPreOrder: true,
+        estimatedDelivery: true,
+        createdAt: true,
         items: {
-          include: {
-            product: true,
+          select: {
+            productName: true,
+            productWeight: true,
+            quantity: true,
+            unitPrice: true,
+            totalPrice: true,
           },
         },
       },

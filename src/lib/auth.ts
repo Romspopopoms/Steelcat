@@ -3,11 +3,13 @@ import prisma from '@/lib/prisma';
 import * as bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is not defined');
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not defined');
+  }
+  return new TextEncoder().encode(secret);
 }
-
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export interface AdminSession {
   id: string;
@@ -21,7 +23,7 @@ export async function createAdminToken(admin: AdminSession) {
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('7d')
     .setIssuedAt()
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 
   return token;
 }
@@ -29,7 +31,7 @@ export async function createAdminToken(admin: AdminSession) {
 // Vérifier et décoder le JWT
 export async function verifyAdminToken(token: string): Promise<AdminSession | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     return payload.admin as AdminSession;
   } catch (error) {
     return null;

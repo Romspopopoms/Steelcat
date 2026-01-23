@@ -20,8 +20,8 @@ interface CartStore {
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: string, weight?: string) => void;
+  updateQuantity: (id: string, quantity: number, weight?: string) => void;
   clearCart: () => void;
   toggleCart: () => void;
   openCart: () => void;
@@ -61,21 +61,21 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      removeItem: (id) => {
+      removeItem: (id, weight) => {
         set({
-          items: get().items.filter((item) => item.id !== id),
+          items: get().items.filter((item) => !(item.id === id && item.weight === weight)),
         });
       },
 
-      updateQuantity: (id, quantity) => {
+      updateQuantity: (id, quantity, weight) => {
         if (quantity <= 0) {
-          get().removeItem(id);
+          get().removeItem(id, weight);
           return;
         }
 
         set({
           items: get().items.map((item) =>
-            item.id === id ? { ...item, quantity } : item
+            item.id === id && item.weight === weight ? { ...item, quantity } : item
           ),
         });
       },

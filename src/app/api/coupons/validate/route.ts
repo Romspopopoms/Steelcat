@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getRateLimitIdentifier(request);
+    const { success } = rateLimit(`coupon:${ip}`, { limit: 10, windowSeconds: 60 });
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Trop de tentatives. Réessayez dans un moment.' },
+        { status: 429 }
+      );
+    }
+
     const { code, subtotal } = await request.json();
 
     if (!code) {

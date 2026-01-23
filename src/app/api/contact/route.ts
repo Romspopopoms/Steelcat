@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+export const dynamic = 'force-dynamic';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -23,6 +35,15 @@ function createTransporter() {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getRateLimitIdentifier(request);
+    const { success } = rateLimit(`contact:${ip}`, { limit: 3, windowSeconds: 600 });
+    if (!success) {
+      return NextResponse.json(
+        { success: false, message: 'Trop de messages envoyés. Réessayez plus tard.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = contactSchema.parse(body);
 
@@ -36,11 +57,11 @@ export async function POST(request: NextRequest) {
       subject: `[Contact] ${validatedData.subject}`,
       html: `
         <h2>Nouveau message de contact</h2>
-        <p><strong>Nom :</strong> ${validatedData.name}</p>
-        <p><strong>Email :</strong> ${validatedData.email}</p>
-        <p><strong>Sujet :</strong> ${validatedData.subject}</p>
+        <p><strong>Nom :</strong> ${escapeHtml(validatedData.name)}</p>
+        <p><strong>Email :</strong> ${escapeHtml(validatedData.email)}</p>
+        <p><strong>Sujet :</strong> ${escapeHtml(validatedData.subject)}</p>
         <hr />
-        <p>${validatedData.message.replace(/\n/g, '<br />')}</p>
+        <p>${escapeHtml(validatedData.message).replace(/\n/g, '<br />')}</p>
         <hr />
         <p style="color: #666; font-size: 12px;">Message envoyé depuis le formulaire de contact steel-cat.com</p>
       `,
@@ -62,15 +83,15 @@ export async function POST(request: NextRequest) {
             <div style="padding: 32px;">
               <h2 style="color: #000; margin: 0 0 16px 0;">Merci pour votre message !</h2>
               <p style="color: #4B5563; line-height: 1.6;">
-                Bonjour <strong>${validatedData.name}</strong>,
+                Bonjour <strong>${escapeHtml(validatedData.name)}</strong>,
               </p>
               <p style="color: #4B5563; line-height: 1.6;">
-                Nous avons bien reçu votre message concernant "<strong>${validatedData.subject}</strong>".
+                Nous avons bien reçu votre message concernant "<strong>${escapeHtml(validatedData.subject)}</strong>".
                 Notre équipe vous répondra dans les plus brefs délais (sous 24-48h ouvrées).
               </p>
               <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin: 24px 0;">
                 <p style="color: #6B7280; font-size: 14px; margin: 0 0 8px 0;"><strong>Votre message :</strong></p>
-                <p style="color: #4B5563; font-size: 14px; margin: 0; white-space: pre-wrap;">${validatedData.message}</p>
+                <p style="color: #4B5563; font-size: 14px; margin: 0; white-space: pre-wrap;">${escapeHtml(validatedData.message)}</p>
               </div>
               <p style="color: #6B7280; font-size: 14px;">
                 L'équipe SteelCat

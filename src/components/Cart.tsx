@@ -131,7 +131,7 @@ export default function Cart() {
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-2 mt-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity - 1, item.weight)}
                         className="w-7 h-7 flex items-center justify-center border border-gray-300 hover:border-black transition-colors text-black"
                         aria-label="Diminuer la quantité"
                       >
@@ -141,7 +141,7 @@ export default function Cart() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity + 1, item.weight)}
                         className="w-7 h-7 flex items-center justify-center border border-gray-300 hover:border-black transition-colors text-black"
                         aria-label="Augmenter la quantité"
                       >
@@ -152,7 +152,7 @@ export default function Cart() {
 
                   {/* Remove Button */}
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.id, item.weight)}
                     className="text-gray-400 hover:text-red-500 transition-colors self-start"
                     aria-label="Retirer du panier"
                   >

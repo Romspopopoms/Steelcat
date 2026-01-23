@@ -94,13 +94,21 @@ export async function POST(request: NextRequest) {
         for (const orderItem of order.items) {
           const product = orderItem.product;
 
-          // Décrémenter le stock
-          await tx.product.update({
-            where: { id: product.id },
-            data: {
-              stock: { decrement: orderItem.quantity },
-            },
-          });
+          // Vérifier que le stock ne deviendra pas négatif avant de décrémenter
+          if (product.status !== 'PRE_ORDER' && product.stock < orderItem.quantity) {
+            console.warn(`Stock insuffisant pour ${product.name} (stock: ${product.stock}, demandé: ${orderItem.quantity}). Stock mis à 0.`);
+            await tx.product.update({
+              where: { id: product.id },
+              data: { stock: 0 },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: product.id },
+              data: {
+                stock: { decrement: orderItem.quantity },
+              },
+            });
+          }
 
           // Mettre à jour le compteur de promo si applicable
           if (product.hasPromo && product.promoLimit) {
@@ -123,6 +131,19 @@ export async function POST(request: NextRequest) {
               data: {
                 preOrderCount: { increment: orderItem.quantity },
               },
+            });
+          }
+        }
+
+        // Incrémenter le compteur d'utilisation du coupon
+        if (order.couponCode) {
+          const coupon = await tx.coupon.findUnique({
+            where: { code: order.couponCode },
+          });
+          if (coupon && (!coupon.maxUses || coupon.usedCount < coupon.maxUses)) {
+            await tx.coupon.update({
+              where: { id: coupon.id },
+              data: { usedCount: { increment: 1 } },
             });
           }
         }

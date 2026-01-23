@@ -3,6 +3,8 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 const createCouponSchema = z.object({
   code: z.string().min(3).max(20).transform(v => v.toUpperCase()),
   type: z.enum(['PERCENTAGE', 'FIXED']),
@@ -77,6 +79,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const updateCouponSchema = z.object({
+  id: z.string().min(1),
+  code: z.string().min(3).max(20).transform(v => v.toUpperCase()).optional(),
+  type: z.enum(['PERCENTAGE', 'FIXED']).optional(),
+  value: z.number().positive().optional(),
+  minOrder: z.number().positive().nullable().optional(),
+  maxUses: z.number().int().positive().nullable().optional(),
+  expiresAt: z.string().datetime().nullable().optional(),
+  isActive: z.boolean().optional(),
+});
+
 // PATCH /api/admin/coupons - Modifier un coupon
 export async function PATCH(request: NextRequest) {
   const session = await getAdminSession();
@@ -86,15 +99,25 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, ...updateData } = body;
+    const parsed = updateCouponSchema.safeParse(body);
 
-    if (!id) {
-      return NextResponse.json({ error: 'ID requis' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Données invalides', details: parsed.error.issues },
+        { status: 400 }
+      );
     }
+
+    const { id, ...updateData } = parsed.data;
 
     const coupon = await prisma.coupon.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...updateData,
+        expiresAt: updateData.expiresAt !== undefined
+          ? (updateData.expiresAt ? new Date(updateData.expiresAt) : null)
+          : undefined,
+      },
     });
 
     return NextResponse.json({ coupon });
