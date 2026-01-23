@@ -92,6 +92,16 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      // Vérifier la limite de précommande
+      if (dbProduct.status === 'PRE_ORDER' && dbProduct.preOrderLimit) {
+        if (dbProduct.preOrderCount + item.quantity > dbProduct.preOrderLimit) {
+          return NextResponse.json(
+            { error: `Limite de précommande atteinte pour ${dbProduct.name} ${dbProduct.weight}` },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Recalculer les montants côté serveur

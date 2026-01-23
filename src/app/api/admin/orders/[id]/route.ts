@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
 import { sendAvailabilityNotificationEmail } from '@/lib/email';
+
+export const dynamic = 'force-dynamic';
+
+const updateOrderStatusSchema = z.object({
+  status: z.enum(['PENDING', 'PAID', 'PRE_ORDER', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+});
 
 export async function PATCH(
   request: Request,
@@ -18,7 +25,15 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+
+    const parsed = updateOrderStatusSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Statut invalide', details: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+    const { status } = parsed.data;
 
     const order = await prisma.order.findUnique({
       where: { id },

@@ -35,18 +35,7 @@ export async function POST(request: NextRequest) {
     // Anonymiser les commandes associées à cet email
     // Note: On ne supprime pas les commandes pour des raisons légales/comptables,
     // mais on anonymise les données personnelles
-    const orders = await prisma.order.findMany({
-      where: { email },
-    });
-
-    if (orders.length === 0) {
-      // Ne pas révéler si l'email existe ou non
-      return NextResponse.json({
-        message: 'Si des données sont associées à cet email, elles seront supprimées sous 30 jours.',
-      });
-    }
-
-    // Anonymiser les données personnelles des commandes
+    // Réponse identique dans tous les cas pour éviter l'énumération d'emails
     await prisma.order.updateMany({
       where: { email },
       data: {

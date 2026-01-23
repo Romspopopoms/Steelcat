@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+
+const validStatuses = ['PENDING', 'PAID', 'PRE_ORDER', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const;
+
+const exportFilterSchema = z.object({
+  status: z.enum(validStatuses).nullable(),
+  from: z.string().datetime().nullable(),
+  to: z.string().datetime().nullable(),
+});
 
 export async function GET(request: NextRequest) {
   const session = await getAdminSession();
@@ -9,11 +20,26 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const status = searchParams.get('status');
-  const from = searchParams.get('from');
-  const to = searchParams.get('to');
+  const rawStatus = searchParams.get('status');
+  const rawFrom = searchParams.get('from');
+  const rawTo = searchParams.get('to');
 
-  const where: any = {};
+  const filterResult = exportFilterSchema.safeParse({
+    status: rawStatus || null,
+    from: rawFrom || null,
+    to: rawTo || null,
+  });
+
+  if (!filterResult.success) {
+    return NextResponse.json(
+      { error: 'Paramètres de filtre invalides', details: filterResult.error.issues },
+      { status: 400 }
+    );
+  }
+
+  const { status, from, to } = filterResult.data;
+
+  const where: Record<string, any> = {};
 
   if (status) {
     where.status = status;
@@ -33,12 +59,15 @@ export async function GET(request: NextRequest) {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Sanitize CSV values to prevent formula injection
-  function sanitizeCsvValue(value: string): string {
-    if (/^[=+\-@\t\r]/.test(value)) {
-      return `'${value}`;
+  // Sanitize and quote CSV values to prevent formula injection
+  function csvField(value: string): string {
+    // Strip formula-triggering characters
+    let safe = value;
+    if (/^[=+\-@\t\r]/.test(safe)) {
+      safe = `'${safe}`;
     }
-    return value;
+    // Always double-quote, escaping internal quotes
+    return `"${safe.replace(/"/g, '""')}"`;
   }
 
   // Générer le CSV
@@ -64,24 +93,24 @@ export async function GET(request: NextRequest) {
   ];
 
   const rows = orders.map(order => [
-    sanitizeCsvValue(order.orderNumber),
-    new Date(order.createdAt).toISOString(),
-    order.status,
-    sanitizeCsvValue(order.email),
-    sanitizeCsvValue(order.firstName),
-    sanitizeCsvValue(order.lastName),
-    sanitizeCsvValue(order.phone),
-    `"${sanitizeCsvValue(order.address).replace(/"/g, '""')}"`,
-    sanitizeCsvValue(order.city),
-    sanitizeCsvValue(order.postalCode),
+    csvField(order.orderNumber),
+    csvField(new Date(order.createdAt).toISOString()),
+    csvField(order.status),
+    csvField(order.email),
+    csvField(order.firstName),
+    csvField(order.lastName),
+    csvField(order.phone),
+    csvField(order.address),
+    csvField(order.city),
+    csvField(order.postalCode),
     order.subtotal.toFixed(2),
     order.shipping.toFixed(2),
     order.discount.toFixed(2),
-    order.couponCode ? sanitizeCsvValue(order.couponCode) : '',
+    order.couponCode ? csvField(order.couponCode) : '""',
     order.total.toFixed(2),
-    `"${order.items.map(i => `${sanitizeCsvValue(i.productName)} ${sanitizeCsvValue(i.productWeight)} x${i.quantity}`).join(', ')}"`,
-    order.isPreOrder ? 'Oui' : 'Non',
-    order.paidAt ? new Date(order.paidAt).toISOString() : '',
+    csvField(order.items.map(i => `${i.productName} ${i.productWeight} x${i.quantity}`).join(', ')),
+    order.isPreOrder ? '"Oui"' : '"Non"',
+    order.paidAt ? csvField(new Date(order.paidAt).toISOString()) : '""',
   ]);
 
   const csv = [

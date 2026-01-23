@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
+
+const validateCouponSchema = z.object({
+  code: z.string().min(1).max(20),
+  subtotal: z.number().min(0).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,14 +21,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { code, subtotal } = await request.json();
-
-    if (!code) {
+    const body = await request.json();
+    const parsed = validateCouponSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Code promo requis' },
+        { error: 'Données invalides' },
         { status: 400 }
       );
     }
+
+    const { code, subtotal } = parsed.data;
 
     const coupon = await prisma.coupon.findUnique({
       where: { code: code.toUpperCase() },
@@ -57,7 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (coupon.minOrder && subtotal < coupon.minOrder) {
+    if (coupon.minOrder && (subtotal ?? 0) < coupon.minOrder) {
       return NextResponse.json(
         { error: `Montant minimum de commande : ${coupon.minOrder.toFixed(2)} €` },
         { status: 400 }
