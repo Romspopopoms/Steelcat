@@ -1,17 +1,28 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/orders/by-session?sessionId=xxx - Récupérer une commande par session Stripe
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
+    const ip = getRateLimitIdentifier(request);
+    const { success } = rateLimit(`orders-session:${ip}`, { limit: 10, windowSeconds: 60 });
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Trop de tentatives. Réessayez dans un moment.' },
+        { status: 429 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
 
-    if (!sessionId || sessionId.length < 20) {
+    // Stripe session IDs start with cs_ and are 60+ chars
+    if (!sessionId || sessionId.length < 30 || !sessionId.startsWith('cs_')) {
       return NextResponse.json(
-        { error: 'sessionId requis' },
+        { error: 'sessionId invalide' },
         { status: 400 }
       );
     }

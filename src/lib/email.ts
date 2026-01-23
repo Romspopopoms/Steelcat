@@ -9,17 +9,26 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-// Configuration du transporteur Nodemailer
-function createTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false, // true pour 465, false pour les autres ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+// Configuration du transporteur Nodemailer (singleton pour réutilisation)
+let transporter: nodemailer.Transporter | null = null;
+
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false, // true pour 465, false pour les autres ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      connectionTimeout: 10000, // 10s connection timeout
+      socketTimeout: 30000, // 30s socket timeout
+      pool: true, // Use connection pooling
+      maxConnections: 3,
+    });
+  }
+  return transporter;
 }
 
 export interface OrderEmailData {
@@ -41,7 +50,7 @@ export interface OrderEmailData {
 
 // Email de confirmation de commande
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
-  const transporter = createTransporter();
+  const transporter = getTransporter();
 
   const itemsHtml = data.items.map(item => `
     <tr>
@@ -192,7 +201,7 @@ export async function sendAvailabilityNotificationEmail(data: {
     weight: string;
   }>;
 }) {
-  const transporter = createTransporter();
+  const transporter = getTransporter();
 
   const itemsList = data.items.map(item => `
     <li style="margin: 8px 0;">${escapeHtml(item.name)} - ${escapeHtml(item.weight)}</li>

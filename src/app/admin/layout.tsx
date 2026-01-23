@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import AdminGuard from '@/components/AdminGuard';
 import { useState, useEffect } from 'react';
 
@@ -15,15 +16,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [admin, setAdmin] = useState<AdminSession | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // Don't apply guard to login page
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
+  const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
-    fetchAdmin();
-  }, []);
+    if (!isLoginPage) {
+      fetchAdmin();
+    }
+  }, [isLoginPage]);
 
   const fetchAdmin = async () => {
     try {
@@ -46,6 +45,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       console.error('Logout error:', error);
     }
   };
+
+  // Don't apply guard to login page
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   const navItems = [
     {
@@ -137,7 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <a
+                <Link
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
@@ -149,7 +153,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   {item.icon}
                   {sidebarOpen && <span className="font-medium">{item.name}</span>}
-                </a>
+                </Link>
               );
             })}
           </nav>

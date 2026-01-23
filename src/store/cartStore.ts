@@ -42,21 +42,24 @@ export const useCartStore = create<CartStore>()(
       },
 
       addItem: (item) => {
+        const MAX_QUANTITY = 50;
         const existingItem = get().items.find(
           (i) => i.id === item.id && i.weight === item.weight
         );
 
         if (existingItem) {
+          const newQuantity = Math.min(existingItem.quantity + (item.quantity || 1), MAX_QUANTITY);
           set({
             items: get().items.map((i) =>
               i.id === item.id && i.weight === item.weight
-                ? { ...i, quantity: i.quantity + (item.quantity || 1) }
+                ? { ...i, quantity: newQuantity }
                 : i
             ),
           });
         } else {
+          const quantity = Math.min(item.quantity || 1, MAX_QUANTITY);
           set({
-            items: [...get().items, { ...item, quantity: item.quantity || 1 }],
+            items: [...get().items, { ...item, quantity }],
           });
         }
       },
@@ -73,9 +76,11 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
+        const MAX_QUANTITY = 50;
+        const clampedQuantity = Math.min(quantity, MAX_QUANTITY);
         set({
           items: get().items.map((item) =>
-            item.id === id && item.weight === weight ? { ...item, quantity } : item
+            item.id === id && item.weight === weight ? { ...item, quantity: clampedQuantity } : item
           ),
         });
       },

@@ -4,16 +4,20 @@ interface RateLimitEntry {
 }
 
 const store = new Map<string, RateLimitEntry>();
+let lastCleanup = Date.now();
 
-// Clean up expired entries periodically
-setInterval(() => {
+// Lazy cleanup: remove expired entries when store gets large
+function cleanupIfNeeded() {
   const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now > entry.resetAt) {
-      store.delete(key);
+  if (store.size > 1000 || now - lastCleanup > 60_000) {
+    for (const [key, entry] of store) {
+      if (now > entry.resetAt) {
+        store.delete(key);
+      }
     }
+    lastCleanup = now;
   }
-}, 60_000);
+}
 
 interface RateLimitOptions {
   /** Max requests allowed in the window */
@@ -26,6 +30,7 @@ export function rateLimit(
   identifier: string,
   options: RateLimitOptions
 ): { success: boolean; remaining: number } {
+  cleanupIfNeeded();
   const now = Date.now();
   const entry = store.get(identifier);
 
@@ -46,7 +51,9 @@ export function rateLimit(
 }
 
 export function getRateLimitIdentifier(request: Request): string {
+  // Use x-forwarded-for (set by reverse proxy/CDN) or x-real-ip
   const forwarded = request.headers.get('x-forwarded-for');
-  const ip = forwarded?.split(',')[0]?.trim() || 'unknown';
+  const realIp = request.headers.get('x-real-ip');
+  const ip = forwarded?.split(',')[0]?.trim() || realIp || 'unknown';
   return ip;
 }

@@ -15,24 +15,26 @@ export async function GET() {
       );
     }
 
-    // Récupérer les statistiques
-    const [totalOrders, orders, products] = await Promise.all([
+    // Récupérer les statistiques avec des requêtes agrégées (plus efficace)
+    const [totalOrders, revenueResult, preOrders, lowStockProducts] = await Promise.all([
       prisma.order.count(),
-      prisma.order.findMany({
+      prisma.order.aggregate({
+        _sum: { total: true },
         where: {
           status: {
             in: ['PAID', 'PRE_ORDER', 'PROCESSING', 'SHIPPED', 'DELIVERED'],
           },
         },
       }),
-      prisma.product.findMany(),
+      prisma.order.count({
+        where: { isPreOrder: true, status: 'PRE_ORDER' },
+      }),
+      prisma.product.count({
+        where: { stock: { lt: 20 } },
+      }),
     ]);
 
-    const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0);
-    const preOrders = await prisma.order.count({
-      where: { isPreOrder: true, status: 'PRE_ORDER' },
-    });
-    const lowStockProducts = products.filter((p: any) => p.stock < 20).length;
+    const totalRevenue = revenueResult._sum.total || 0;
 
     return NextResponse.json({
       totalOrders,

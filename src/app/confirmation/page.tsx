@@ -96,12 +96,15 @@ export default function ConfirmationPage() {
             // Nettoyer le localStorage
             localStorage.removeItem('checkoutData');
           } else {
+            localStorage.removeItem('checkoutData');
             router.push('/');
           }
         } catch {
+          localStorage.removeItem('checkoutData');
           router.push('/');
         }
       } else {
+        localStorage.removeItem('checkoutData');
         router.push('/');
       }
     };

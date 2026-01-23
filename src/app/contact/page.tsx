@@ -253,7 +253,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-black mb-2">Email</h3>
-                    <p className="text-gray-600">À définir</p>
+                    <p className="text-gray-600">sav@steel-cat.com</p>
                     <p className="text-sm text-gray-500 mt-1">
                       Réponse sous 24h
                     </p>
@@ -281,7 +281,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-black mb-2">Téléphone</h3>
-                    <p className="text-gray-600">À définir</p>
+                    <p className="text-gray-600">Contactez-nous par email</p>
                     <p className="text-sm text-gray-500 mt-1">
                       Lun-Ven: 9h-18h
                     </p>
@@ -316,7 +316,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-black mb-2">Adresse</h3>
                     <p className="text-gray-600">
-                      À définir
+                      France
                     </p>
                   </div>
                 </div>
@@ -331,9 +331,9 @@ export default function ContactPage() {
                   Consultez notre FAQ pour trouver rapidement des réponses à vos
                   questions.
                 </p>
-                <button className="text-black font-semibold hover:underline">
-                  Voir la FAQ →
-                </button>
+                <a href="mailto:sav@steel-cat.com" className="text-black font-semibold hover:underline">
+                  Nous contacter →
+                </a>
               </div>
             </div>
           </div>

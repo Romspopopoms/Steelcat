@@ -46,11 +46,13 @@ export async function POST(request: NextRequest) {
         address: '',
         city: '',
         postalCode: '',
+        stripeSessionId: null,
+        stripePaymentIntent: null,
       },
     });
 
     return NextResponse.json({
-      message: 'Si des données sont associées à cet email, elles seront supprimées sous 30 jours.',
+      message: 'Si des données sont associées à cet email, elles ont été anonymisées conformément au RGPD.',
     });
   } catch (error) {
     console.error('Error processing GDPR erasure:', error);

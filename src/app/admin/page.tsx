@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface Stats {
   totalOrders: number;
@@ -116,7 +117,7 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Actions rapides</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
+          <Link
             href="/admin/products"
             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-black transition-colors"
           >
@@ -127,9 +128,9 @@ export default function AdminDashboard() {
               <h3 className="font-semibold text-gray-900">Gérer les produits</h3>
               <p className="text-sm text-gray-600">Stock, prix, statuts</p>
             </div>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin/orders"
             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-black transition-colors"
           >
@@ -140,9 +141,9 @@ export default function AdminDashboard() {
               <h3 className="font-semibold text-gray-900">Voir les commandes</h3>
               <p className="text-sm text-gray-600">Gérer et expédier</p>
             </div>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin/pre-orders"
             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-black transition-colors"
           >
@@ -153,7 +154,7 @@ export default function AdminDashboard() {
               <h3 className="font-semibold text-gray-900">Précommandes</h3>
               <p className="text-sm text-gray-600">Suivi et notifications</p>
             </div>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -99,10 +99,6 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Compte par défaut :</p>
-            <p className="font-mono mt-1">admin@steelcat.fr / admin123</p>
-          </div>
         </div>
 
         <div className="text-center mt-6 text-gray-400 text-sm">

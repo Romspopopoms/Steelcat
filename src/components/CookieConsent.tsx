@@ -15,6 +15,24 @@ const DEFAULT_PREFERENCES: CookiePreferences = {
   marketing: false,
 };
 
+// Utility to check cookie consent status from other components
+export function getCookieConsent(): CookiePreferences {
+  if (typeof window === 'undefined') return DEFAULT_PREFERENCES;
+  try {
+    const consent = localStorage.getItem('cookie-consent');
+    if (consent) return JSON.parse(consent);
+  } catch {}
+  return DEFAULT_PREFERENCES;
+}
+
+export function hasAnalyticsConsent(): boolean {
+  return getCookieConsent().analytics;
+}
+
+export function hasMarketingConsent(): boolean {
+  return getCookieConsent().marketing;
+}
+
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);

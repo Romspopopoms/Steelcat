@@ -8,6 +8,12 @@ import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+const cartItemSchema = z.object({
+  id: z.string().min(1),
+  price: z.number().positive(),
+  quantity: z.number().int().positive().max(50),
+});
+
 const customerInfoSchema = z.object({
   email: z.string().email(),
   firstName: z.string().min(1).max(100),
@@ -16,6 +22,12 @@ const customerInfoSchema = z.object({
   address: z.string().min(1).max(300),
   city: z.string().min(1).max(100),
   postalCode: z.string().min(1).max(10),
+});
+
+const checkoutSchema = z.object({
+  items: z.array(cartItemSchema).min(1).max(20),
+  couponCode: z.string().max(50).optional().nullable(),
+  customerInfo: customerInfoSchema,
 });
 
 function getStripe() {
@@ -40,27 +52,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { items, couponCode } = body;
 
-    // Validate customerInfo with Zod
-    const customerInfoResult = customerInfoSchema.safeParse(body.customerInfo);
-    if (!customerInfoResult.success) {
+    // Validate entire checkout payload with Zod
+    const checkoutResult = checkoutSchema.safeParse(body);
+    if (!checkoutResult.success) {
       return NextResponse.json(
-        { error: 'Informations client invalides' },
+        { error: 'Données de commande invalides' },
         { status: 400 }
       );
     }
-    const customerInfo = customerInfoResult.data;
-
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { error: 'Panier vide' },
-        { status: 400 }
-      );
-    }
+    const { items, couponCode, customerInfo } = checkoutResult.data;
 
     // Récupérer les produits depuis la DB pour vérification des prix
-    const productIds = items.map((item: any) => item.id);
+    const productIds = items.map((item) => item.id);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } },
     });
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Recalculer les montants côté serveur
-    const subtotal = items.reduce((sum: number, item: any) => {
+    const subtotal = items.reduce((sum: number, item) => {
       const dbProduct = dbProductMap.get(item.id)!;
       return sum + dbProduct.currentPrice * item.quantity;
     }, 0);
@@ -141,7 +145,7 @@ export async function POST(request: NextRequest) {
     const total = Math.max(0, subtotal + shipping - discount);
 
     // Convert cart items to Stripe line items using DB prices
-    const lineItems = items.map((item: any) => {
+    const lineItems = items.map((item) => {
       const dbProduct = dbProductMap.get(item.id)!;
       return {
         price_data: {
@@ -173,25 +177,25 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Add discount as negative line item if applicable
+    // Create Stripe session with optional discount via Stripe coupon
+    let stripeCouponId: string | undefined;
     if (discount > 0) {
-      lineItems.push({
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: `Réduction${appliedCoupon ? ` (${appliedCoupon.code})` : ''}`,
-            images: [],
-          },
-          unit_amount: -Math.round(discount * 100),
-        },
-        quantity: 1,
+      const stripeCoupon = await stripe.coupons.create({
+        amount_off: Math.round(discount * 100),
+        currency: 'eur',
+        duration: 'once',
+        name: appliedCoupon ? `Réduction (${appliedCoupon.code})` : 'Réduction',
       });
+      stripeCouponId = stripeCoupon.id;
     }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
+      ...(stripeCouponId && {
+        discounts: [{ coupon: stripeCouponId }],
+      }),
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/confirmation?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`,
       customer_email: customerInfo.email,
@@ -252,7 +256,7 @@ export async function POST(request: NextRequest) {
         isPreOrder,
         estimatedDelivery,
         items: {
-          create: items.map((item: any) => {
+          create: items.map((item) => {
             const dbProduct = dbProductMap.get(item.id)!;
             return {
               productId: item.id,

@@ -29,7 +29,7 @@ export async function PATCH(
     const parsed = updateOrderStatusSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Statut invalide', details: parsed.error.issues },
+        { error: 'Statut invalide' },
         { status: 400 }
       );
     }
@@ -78,7 +78,7 @@ export async function PATCH(
             weight: item.productWeight,
           })),
         });
-        console.log(`📧 Availability notification sent to ${order.email}`);
+        console.log(`Availability notification sent for order ${order.orderNumber}`);
       } catch (emailError) {
         console.error('Error sending availability notification:', emailError);
       }

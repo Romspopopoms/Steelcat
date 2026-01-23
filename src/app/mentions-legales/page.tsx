@@ -33,13 +33,13 @@ export default function MentionsLegalesPage() {
                   <strong>Capital social :</strong> 50 000€
                 </p>
                 <p>
-                  <strong>SIRET :</strong> 123 456 789 00012
+                  <strong>SIRET :</strong> 99072342100014
                 </p>
                 <p>
-                  <strong>RCS :</strong> Paris B 123 456 789
+                  <strong>RCS :</strong> Paris B 990 723 421
                 </p>
                 <p>
-                  <strong>TVA intracommunautaire :</strong> FR12345678900
+                  <strong>TVA intracommunautaire :</strong> FR00990723421
                 </p>
                 <p>
                   <strong>Siège social :</strong> 123 Rue du Commerce, 75001
@@ -55,8 +55,7 @@ export default function MentionsLegalesPage() {
                   </a>
                 </p>
                 <p>
-                  <strong>Directeur de la publication :</strong> [Nom du
-                  Directeur]
+                  <strong>Directeur de la publication :</strong> Le représentant légal de SteelCat SAS
                 </p>
               </div>
             </section>
@@ -232,7 +231,7 @@ export default function MentionsLegalesPage() {
 
             <div className="mt-12 pt-8 border-t border-gray-200">
               <p className="text-sm text-gray-600">
-                Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}
+                Dernière mise à jour : 23/01/2026
               </p>
             </div>
           </div>

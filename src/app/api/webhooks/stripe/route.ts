@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
     return NextResponse.json(
-      { error: `Webhook Error: ${err.message}` },
+      { error: 'Webhook signature verification failed' },
       { status: 400 }
     );
   }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
-      // Mettre à jour la commande dans une transaction
+      // Mettre à jour la commande dans une transaction avec isolation sérialisable
       await prisma.$transaction(async (tx) => {
         // Mettre à jour la commande en PAID
         await tx.order.update({
@@ -90,62 +90,54 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        // Mettre à jour les stocks et compteurs de promo pour chaque produit
+        // Mettre à jour les stocks et compteurs pour chaque produit
         for (const orderItem of order.items) {
-          const product = orderItem.product;
+          // Re-fetch product inside transaction for fresh data
+          const product = await tx.product.findUnique({
+            where: { id: orderItem.productId },
+          });
+          if (!product) continue;
 
-          // Vérifier que le stock ne deviendra pas négatif avant de décrémenter
-          if (product.status !== 'PRE_ORDER' && product.stock < orderItem.quantity) {
-            console.warn(`Stock insuffisant pour ${product.name} (stock: ${product.stock}, demandé: ${orderItem.quantity}). Stock mis à 0.`);
-            await tx.product.update({
-              where: { id: product.id },
-              data: { stock: 0 },
-            });
+          // Build consolidated update for this product
+          const updateData: Record<string, any> = {};
+
+          if (product.status === 'PRE_ORDER') {
+            // Pre-order: increment pre-order count, don't decrement stock
+            updateData.preOrderCount = { increment: orderItem.quantity };
           } else {
-            await tx.product.update({
-              where: { id: product.id },
-              data: {
-                stock: { decrement: orderItem.quantity },
-              },
-            });
+            // Regular order: decrement stock (prevent negative)
+            if (product.stock < orderItem.quantity) {
+              console.warn(`Stock insuffisant pour ${product.name} (stock: ${product.stock}, demandé: ${orderItem.quantity}).`);
+              updateData.stock = 0;
+            } else {
+              updateData.stock = { decrement: orderItem.quantity };
+            }
           }
 
-          // Mettre à jour le compteur de promo si applicable
+          // Promo counter update (use atomic increment)
           if (product.hasPromo && product.promoLimit) {
             const newPromoSold = product.promoSold + orderItem.quantity;
-
-            await tx.product.update({
-              where: { id: product.id },
-              data: {
-                promoSold: newPromoSold,
-                hasPromo: newPromoSold < product.promoLimit,
-                currentPrice: newPromoSold >= product.promoLimit ? product.originalPrice : product.currentPrice,
-              },
-            });
+            updateData.promoSold = { increment: orderItem.quantity };
+            if (newPromoSold >= product.promoLimit) {
+              updateData.hasPromo = false;
+              updateData.currentPrice = product.originalPrice;
+            }
           }
 
-          // Incrémenter le compteur de précommandes si applicable
-          if (product.status === 'PRE_ORDER') {
-            await tx.product.update({
-              where: { id: product.id },
-              data: {
-                preOrderCount: { increment: orderItem.quantity },
-              },
-            });
-          }
+          await tx.product.update({
+            where: { id: product.id },
+            data: updateData,
+          });
         }
 
         // Incrémenter le compteur d'utilisation du coupon
         if (order.couponCode) {
-          const coupon = await tx.coupon.findUnique({
+          await tx.coupon.update({
             where: { code: order.couponCode },
+            data: { usedCount: { increment: 1 } },
+          }).catch(() => {
+            // Coupon may have been deleted - non-critical
           });
-          if (coupon && (!coupon.maxUses || coupon.usedCount < coupon.maxUses)) {
-            await tx.coupon.update({
-              where: { id: coupon.id },
-              data: { usedCount: { increment: 1 } },
-            });
-          }
         }
       });
 
@@ -169,7 +161,7 @@ export async function POST(request: NextRequest) {
           isPreOrder: order.isPreOrder,
           estimatedDelivery: order.estimatedDelivery,
         });
-        console.log(`Confirmation email sent to ${order.email}`);
+        console.log(`Confirmation email sent for order ${order.orderNumber}`);
       } catch (emailError) {
         console.error('Error sending confirmation email:', emailError);
       }

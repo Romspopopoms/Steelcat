@@ -4,6 +4,12 @@ import * as bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Guard against running in production
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ Cannot run seed in production! Set NODE_ENV=development to seed.');
+    process.exit(1);
+  }
+
   console.log('🌱 Starting database seed...');
 
   // Supprimer les données existantes
@@ -87,10 +93,11 @@ async function main() {
   console.log(`✅ Created ${products.length} product variants`);
 
   // Créer un compte admin par défaut
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const hashedPassword = await bcrypt.hash(adminPassword, 12);
   const admin = await prisma.admin.create({
     data: {
-      email: 'admin@steelcat.fr',
+      email: process.env.ADMIN_EMAIL || 'admin@steelcat.fr',
       name: 'Admin SteelCat',
       password: hashedPassword,
       canManageProducts: true,
@@ -100,8 +107,7 @@ async function main() {
   });
 
   console.log(`✅ Created admin user: ${admin.email}`);
-  console.log('   Password: admin123');
-  console.log('   ⚠️  Please change this password after first login!');
+  console.log('   ⚠️  Please change the default password after first login!');
 
   console.log('\n🎉 Database seed completed successfully!');
   console.log('\nCreated products:');

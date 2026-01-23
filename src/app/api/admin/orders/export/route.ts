@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
   if (!filterResult.success) {
     return NextResponse.json(
-      { error: 'Paramètres de filtre invalides', details: filterResult.error.issues },
+      { error: 'Paramètres de filtre invalides' },
       { status: 400 }
     );
   }

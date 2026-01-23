@@ -76,7 +76,7 @@ export async function PATCH(
     const parseResult = updateProductSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Données invalides', details: parseResult.error.issues },
+        { error: 'Données invalides' },
         { status: 400 }
       );
     }

@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function WhyChoose() {
   const benefits = [
     {
@@ -99,12 +101,12 @@ export default function WhyChoose() {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <a
+          <Link
             href="/produit"
             className="inline-block bg-black text-white px-10 py-4 rounded-lg text-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg"
           >
             Découvrir SteelCat
-          </a>
+          </Link>
         </div>
       </div>
     </section>

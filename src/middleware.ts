@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
-export function middleware(request: NextRequest) {
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return null;
+  return new TextEncoder().encode(secret);
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect admin pages (not API routes - those check auth themselves)
@@ -11,6 +18,20 @@ export function middleware(request: NextRequest) {
     if (!token) {
       const loginUrl = new URL('/admin/login', request.url);
       return NextResponse.redirect(loginUrl);
+    }
+
+    // Verify JWT signature in middleware
+    const secret = getJwtSecret();
+    if (secret) {
+      try {
+        await jwtVerify(token, secret);
+      } catch {
+        // Invalid token - redirect to login
+        const loginUrl = new URL('/admin/login', request.url);
+        const response = NextResponse.redirect(loginUrl);
+        response.cookies.delete('admin_token');
+        return response;
+      }
     }
   }
 
