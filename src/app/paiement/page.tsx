@@ -12,13 +12,13 @@ const stripePromise = loadStripe(
 
 export default function PaiementPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initiatePayment = async () => {
       // Get checkout data from localStorage with safe parsing
-      const raw = localStorage.getItem('checkoutData');
+      const raw = sessionStorage.getItem('checkoutData');
 
       if (!raw) {
         router.push('/checkout');
@@ -29,13 +29,13 @@ export default function PaiementPage() {
       try {
         data = JSON.parse(raw);
       } catch {
-        localStorage.removeItem('checkoutData');
+        sessionStorage.removeItem('checkoutData');
         router.push('/checkout');
         return;
       }
 
       if (!data || !data.items || !data.customerInfo) {
-        localStorage.removeItem('checkoutData');
+        sessionStorage.removeItem('checkoutData');
         router.push('/checkout');
         return;
       }

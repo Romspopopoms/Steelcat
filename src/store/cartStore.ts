@@ -125,6 +125,7 @@ export const useCartStore = create<CartStore>()(
           removeItem: () => {},
         };
       }),
+      partialize: (state) => ({ items: state.items }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

@@ -133,7 +133,8 @@ export async function POST(request: NextRequest) {
 
         if (!isExpired && !isMaxUsed && !isBelowMinOrder) {
           if (coupon.type === 'PERCENTAGE') {
-            discount = subtotal * (coupon.value / 100);
+            const cappedValue = Math.min(coupon.value, 100);
+            discount = subtotal * (cappedValue / 100);
           } else {
             discount = Math.min(coupon.value, subtotal);
           }
@@ -209,18 +210,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Annuler les commandes PENDING anciennes pour éviter les doublons
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     await prisma.order.deleteMany({
       where: {
         email: customerInfo.email,
         status: 'PENDING',
-        createdAt: { lt: fiveMinutesAgo },
+        createdAt: { lt: thirtyMinutesAgo },
         paidAt: null,
       },
     });
 
-    // Générer un numéro de commande robuste
-    const orderNumber = `SC-${randomUUID().slice(0, 8).toUpperCase()}`;
+    // Générer un numéro de commande robuste (12 hex chars = 16^12 ~= 281 trillion combinations)
+    const orderNumber = `SC-${randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
 
     let isPreOrder = false;
     let estimatedDelivery: Date | null = null;

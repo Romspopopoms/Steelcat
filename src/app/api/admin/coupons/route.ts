@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 const createCouponSchema = z.object({
   code: z.string().min(3).max(20).transform(v => v.toUpperCase()),
   type: z.enum(['PERCENTAGE', 'FIXED']),
-  value: z.number().positive(),
+  value: z.number().positive().max(10000),
   minOrder: z.number().positive().nullable().optional(),
   maxUses: z.number().int().positive().nullable().optional(),
   expiresAt: z.string().datetime().nullable().optional(),
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Données invalides', details: parsed.error.issues },
+        { error: 'Données invalides' },
         { status: 400 }
       );
     }

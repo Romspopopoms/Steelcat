@@ -66,10 +66,8 @@ export async function POST(request: NextRequest) {
 
       if (!order) {
         console.error(`Order not found for session ${session.id}`);
-        return NextResponse.json(
-          { error: 'Order not found' },
-          { status: 404 }
-        );
+        // Return 200 to prevent Stripe from retrying indefinitely
+        return NextResponse.json({ received: true });
       }
 
       // Idempotence : vérifier si la commande est déjà payée
@@ -167,10 +165,8 @@ export async function POST(request: NextRequest) {
       }
     } catch (error) {
       console.error('Error processing webhook:', error);
-      return NextResponse.json(
-        { error: 'Error processing webhook' },
-        { status: 500 }
-      );
+      // Return 200 for non-transient errors to avoid infinite Stripe retries
+      return NextResponse.json({ received: true, error: 'processing_failed' });
     }
   }
 

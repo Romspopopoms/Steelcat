@@ -88,7 +88,7 @@ export default function CheckoutPage() {
 
     try {
       // Store checkout data for Stripe payment page
-      localStorage.setItem(
+      sessionStorage.setItem(
         'checkoutData',
         JSON.stringify({
           items,
@@ -176,6 +176,7 @@ export default function CheckoutPage() {
                         {...register('email')}
                         type="email"
                         id="email"
+                        autoComplete="email"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
                         placeholder="votre@email.com"
                       />
@@ -205,6 +206,7 @@ export default function CheckoutPage() {
                         {...register('firstName')}
                         type="text"
                         id="firstName"
+                        autoComplete="given-name"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
                       />
                       {errors.firstName && (
@@ -225,6 +227,7 @@ export default function CheckoutPage() {
                         {...register('lastName')}
                         type="text"
                         id="lastName"
+                        autoComplete="family-name"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
                       />
                       {errors.lastName && (
@@ -245,6 +248,7 @@ export default function CheckoutPage() {
                         {...register('address')}
                         type="text"
                         id="address"
+                        autoComplete="street-address"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
                       />
                       {errors.address && (
@@ -265,6 +269,7 @@ export default function CheckoutPage() {
                         {...register('city')}
                         type="text"
                         id="city"
+                        autoComplete="address-level2"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
                       />
                       {errors.city && (
@@ -285,6 +290,7 @@ export default function CheckoutPage() {
                         {...register('postalCode')}
                         type="text"
                         id="postalCode"
+                        autoComplete="postal-code"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
                         maxLength={5}
                       />
@@ -306,6 +312,7 @@ export default function CheckoutPage() {
                         {...register('phone')}
                         type="tel"
                         id="phone"
+                        autoComplete="tel"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-black"
                         placeholder="06 12 34 56 78"
                       />
@@ -376,8 +383,14 @@ export default function CheckoutPage() {
                       htmlFor="acceptTerms"
                       className="text-sm text-black"
                     >
-                      J&apos;accepte les conditions générales de vente et la
-                      politique de confidentialité
+                      J&apos;accepte les{' '}
+                      <a href="/cgv" target="_blank" className="underline font-medium">
+                        conditions générales de vente
+                      </a>{' '}
+                      et la{' '}
+                      <a href="/confidentialite" target="_blank" className="underline font-medium">
+                        politique de confidentialité
+                      </a>
                     </label>
                   </div>
                   {errors.acceptTerms && (

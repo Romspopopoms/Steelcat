@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -305,12 +306,12 @@ export default function ConfidentialitePage() {
               </p>
               <p className="text-gray-700 leading-relaxed">
                 Pour plus d&apos;informations sur les cookies, consultez nos{' '}
-                <a
+                <Link
                   href="/mentions-legales#cookies"
                   className="text-black font-semibold hover:underline"
                 >
                   Mentions Légales
-                </a>
+                </Link>
                 .
               </p>
             </section>

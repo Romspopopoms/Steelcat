@@ -74,6 +74,12 @@ export default function ProductPage() {
     }
   };
 
+  // Reset quantity and image when switching variants
+  useEffect(() => {
+    setQuantity(1);
+    setSelectedImage(0);
+  }, [selectedProductId]);
+
   const selectedProduct = products.find(p => p.id === selectedProductId);
 
   const handleAddToCart = () => {
@@ -150,8 +156,9 @@ export default function ProductPage() {
               <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl">
                 <Image
                   src={selectedProduct.images[selectedImage] || "/litiere-1.jpg"}
-                  alt="Litière SteelCat Premium"
+                  alt={selectedProduct.name || "Litière SteelCat Premium"}
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
                   priority
                 />
@@ -393,7 +400,7 @@ export default function ProductPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <div className="font-semibold text-black">Livraison sous 5 jours ouvrés</div>
+                    <div className="font-semibold text-black">Livraison sous 2-3 jours ouvrés</div>
                     <div className="text-sm text-gray-600">{isPreOrder ? 'À la disponibilité' : 'Livraison rapide'}</div>
                   </div>
                 </div>

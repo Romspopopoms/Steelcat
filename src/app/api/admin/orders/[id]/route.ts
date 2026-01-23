@@ -10,6 +10,17 @@ const updateOrderStatusSchema = z.object({
   status: z.enum(['PENDING', 'PAID', 'PRE_ORDER', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
 });
 
+// Valid status transitions (state machine)
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ['PAID', 'CANCELLED'],
+  PAID: ['PROCESSING', 'CANCELLED'],
+  PRE_ORDER: ['PROCESSING', 'CANCELLED'],
+  PROCESSING: ['SHIPPED', 'CANCELLED'],
+  SHIPPED: ['DELIVERED'],
+  DELIVERED: [],
+  CANCELLED: [],
+};
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -49,12 +60,43 @@ export async function PATCH(
       );
     }
 
+    // Validate status transition
+    const allowedTransitions = VALID_TRANSITIONS[order.status] || [];
+    if (!allowedTransitions.includes(status)) {
+      return NextResponse.json(
+        { error: `Transition de ${order.status} vers ${status} non autorisée` },
+        { status: 400 }
+      );
+    }
+
     // Si on passe une précommande en PROCESSING ou SHIPPED, envoyer l'email de disponibilité
     const shouldNotify =
       order.isPreOrder &&
       order.status === 'PRE_ORDER' &&
       (status === 'PROCESSING' || status === 'SHIPPED') &&
       !order.notificationSent;
+
+    // Handle cancellation: restore stock/pre-order counts
+    if (status === 'CANCELLED' && (order.status === 'PAID' || order.status === 'PRE_ORDER' || order.status === 'PROCESSING')) {
+      await prisma.$transaction(async (tx) => {
+        for (const item of order.items) {
+          const product = await tx.product.findUnique({ where: { id: item.productId } });
+          if (!product) continue;
+
+          if (product.status === 'PRE_ORDER') {
+            await tx.product.update({
+              where: { id: product.id },
+              data: { preOrderCount: { decrement: item.quantity } },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: product.id },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+      });
+    }
 
     const updatedOrder = await prisma.order.update({
       where: { id },

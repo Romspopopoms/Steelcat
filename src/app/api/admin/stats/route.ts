@@ -17,7 +17,13 @@ export async function GET() {
 
     // Récupérer les statistiques avec des requêtes agrégées (plus efficace)
     const [totalOrders, revenueResult, preOrders, lowStockProducts] = await Promise.all([
-      prisma.order.count(),
+      prisma.order.count({
+        where: {
+          status: {
+            in: ['PAID', 'PRE_ORDER', 'PROCESSING', 'SHIPPED', 'DELIVERED'],
+          },
+        },
+      }),
       prisma.order.aggregate({
         _sum: { total: true },
         where: {

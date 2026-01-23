@@ -37,12 +37,14 @@ export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(DEFAULT_PREFERENCES);
+  const [hasConsented, setHasConsented] = useState(false);
 
   useEffect(() => {
     const consent = localStorage.getItem('cookie-consent');
     if (!consent) {
       setVisible(true);
     } else {
+      setHasConsented(true);
       try {
         setPreferences(JSON.parse(consent));
       } catch {}
@@ -65,22 +67,24 @@ export default function CookieConsent() {
       marketing: true,
     };
     localStorage.setItem('cookie-consent', JSON.stringify(allAccepted));
+    setHasConsented(true);
     setVisible(false);
   };
 
   const refuseAll = () => {
     localStorage.setItem('cookie-consent', JSON.stringify(DEFAULT_PREFERENCES));
+    setHasConsented(true);
     setVisible(false);
   };
 
   const savePreferences = () => {
     localStorage.setItem('cookie-consent', JSON.stringify(preferences));
+    setHasConsented(true);
     setVisible(false);
   };
 
   if (!visible) {
-    const hasConsent = typeof window !== 'undefined' && localStorage.getItem('cookie-consent');
-    if (!hasConsent) return null;
+    if (!hasConsented) return null;
     return (
       <button
         onClick={reopenBanner}

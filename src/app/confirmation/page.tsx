@@ -53,7 +53,7 @@ export default function ConfirmationPage() {
             // Récupérer les données checkout pour les images
             let checkoutItems: any[] = [];
             try {
-              const checkoutData = localStorage.getItem('checkoutData');
+              const checkoutData = sessionStorage.getItem('checkoutData');
               if (checkoutData) {
                 const parsed = JSON.parse(checkoutData);
                 checkoutItems = parsed.items || [];
@@ -72,7 +72,7 @@ export default function ConfirmationPage() {
                   price: item.unitPrice,
                   quantity: item.quantity,
                   weight: item.productWeight,
-                  image: checkoutItem?.image || '/images/product-placeholder.jpg',
+                  image: checkoutItem?.image || '/litiere-1.jpg',
                 };
               }),
               customerInfo: {
@@ -94,17 +94,17 @@ export default function ConfirmationPage() {
             // Vider le panier après confirmation réussie
             clearCart();
             // Nettoyer le localStorage
-            localStorage.removeItem('checkoutData');
+            sessionStorage.removeItem('checkoutData');
           } else {
-            localStorage.removeItem('checkoutData');
+            sessionStorage.removeItem('checkoutData');
             router.push('/');
           }
         } catch {
-          localStorage.removeItem('checkoutData');
+          sessionStorage.removeItem('checkoutData');
           router.push('/');
         }
       } else {
-        localStorage.removeItem('checkoutData');
+        sessionStorage.removeItem('checkoutData');
         router.push('/');
       }
     };
@@ -275,7 +275,7 @@ export default function ConfirmationPage() {
                   />
                 </svg>
                 <span>
-                  Votre commande sera expédiée sous 24-48h ouvrées
+                  Votre commande sera expédiée sous 2-3 jours ouvrés
                 </span>
               </li>
               <li className="flex items-start gap-3">

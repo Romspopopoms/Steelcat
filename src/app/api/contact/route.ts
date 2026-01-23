@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import nodemailer from 'nodemailer';
 import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
+import { getTransporter } from '@/lib/email';
 
 function escapeHtml(str: string): string {
   return str
@@ -15,23 +15,11 @@ function escapeHtml(str: string): string {
 export const dynamic = 'force-dynamic';
 
 const contactSchema = z.object({
-  name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
-  email: z.string().email('Email invalide'),
-  subject: z.string().min(5, 'Le sujet doit contenir au moins 5 caractères'),
-  message: z.string().min(10, 'Le message doit contenir au moins 10 caractères'),
+  name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(100),
+  email: z.string().email('Email invalide').max(254),
+  subject: z.string().min(5, 'Le sujet doit contenir au moins 5 caractères').max(200).regex(/^[^\r\n]+$/, 'Le sujet ne doit pas contenir de retour à la ligne'),
+  message: z.string().min(10, 'Le message doit contenir au moins 10 caractères').max(5000),
 });
-
-function createTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,7 +35,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = contactSchema.parse(body);
 
-    const transporter = createTransporter();
+    const transporter = getTransporter();
 
     // Envoyer l'email au SAV
     await transporter.sendMail({

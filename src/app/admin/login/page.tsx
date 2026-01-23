@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -102,9 +103,9 @@ export default function AdminLoginPage() {
         </div>
 
         <div className="text-center mt-6 text-gray-400 text-sm">
-          <a href="/" className="hover:text-white transition-colors">
+          <Link href="/" className="hover:text-white transition-colors">
             ← Retour au site
-          </a>
+          </Link>
         </div>
       </div>
     </div>

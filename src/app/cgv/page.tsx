@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -20,13 +21,25 @@ export default function CGVPage() {
             <section>
               <h2 className="text-2xl font-bold text-black mb-4">Informations légales</h2>
               <p className="text-gray-700 leading-relaxed mb-2">
-                <strong>Raison sociale :</strong> SteelCat
+                <strong>Raison sociale :</strong> SteelCat SAS
               </p>
               <p className="text-gray-700 leading-relaxed mb-2">
-                <strong>SIREN :</strong> 990723421
+                <strong>Forme juridique :</strong> Société par Actions Simplifiée
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-2">
+                <strong>Capital social :</strong> 50 000€
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-2">
+                <strong>SIRET :</strong> 99072342100014
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-2">
+                <strong>RCS :</strong> Paris B 990 723 421
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-2">
+                <strong>TVA intracommunautaire :</strong> FR00990723421
               </p>
               <p className="text-gray-700 leading-relaxed">
-                <strong>SIRET :</strong> 99072342100014
+                <strong>Siège social :</strong> 123 Rue du Commerce, 75001 Paris, France
               </p>
             </section>
 
@@ -182,12 +195,12 @@ export default function CGVPage() {
                 disposez d&apos;un droit d&apos;accès, de rectification et de
                 suppression de vos données. Pour plus d&apos;informations,
                 consultez notre{' '}
-                <a
+                <Link
                   href="/confidentialite"
                   className="text-black font-semibold hover:underline"
                 >
                   Politique de Confidentialité
-                </a>
+                </Link>
                 .
               </p>
             </section>

@@ -22,16 +22,20 @@ export async function middleware(request: NextRequest) {
 
     // Verify JWT signature in middleware
     const secret = getJwtSecret();
-    if (secret) {
-      try {
-        await jwtVerify(token, secret);
-      } catch {
-        // Invalid token - redirect to login
-        const loginUrl = new URL('/admin/login', request.url);
-        const response = NextResponse.redirect(loginUrl);
-        response.cookies.delete('admin_token');
-        return response;
-      }
+    if (!secret) {
+      // JWT_SECRET not configured - deny access
+      const loginUrl = new URL('/admin/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    try {
+      await jwtVerify(token, secret);
+    } catch {
+      // Invalid token - redirect to login
+      const loginUrl = new URL('/admin/login', request.url);
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete('admin_token');
+      return response;
     }
   }
 

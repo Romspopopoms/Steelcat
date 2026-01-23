@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { verifyAdminCredentials, setAdminSession } from '@/lib/auth';
 import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
+
+const loginSchema = z.object({
+  email: z.string().email().max(254),
+  password: z.string().min(1).max(128),
+});
 
 export async function POST(request: Request) {
   try {
@@ -15,14 +21,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, password } = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Corps de requête invalide' },
+        { status: 400 }
+      );
+    }
 
-    if (!email || !password) {
+    const parsed = loginSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
         { error: 'Email et mot de passe requis' },
         { status: 400 }
       );
     }
+
+    const { email, password } = parsed.data;
 
     const admin = await verifyAdminCredentials(email, password);
 

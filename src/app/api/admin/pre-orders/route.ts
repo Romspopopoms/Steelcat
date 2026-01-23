@@ -24,6 +24,7 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc',
       },
+      take: 500,
     });
 
     return NextResponse.json({ preOrders });

@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
       items: true,
     },
     orderBy: { createdAt: 'desc' },
+    take: 10000,
   });
 
   // Sanitize and quote CSV values to prevent formula injection

@@ -12,7 +12,7 @@ function escapeHtml(str: string): string {
 // Configuration du transporteur Nodemailer (singleton pour réutilisation)
 let transporter: nodemailer.Transporter | null = null;
 
-function getTransporter() {
+export function getTransporter() {
   if (!transporter) {
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
