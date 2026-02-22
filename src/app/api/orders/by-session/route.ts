@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get('sessionId');
 
     // Stripe session IDs start with cs_ and are 60+ chars
-    if (!sessionId || sessionId.length < 30 || !sessionId.startsWith('cs_')) {
+    if (!sessionId || !/^cs_(test_|live_)?[a-zA-Z0-9]{20,}$/.test(sessionId)) {
       return NextResponse.json(
         { error: 'sessionId invalide' },
         { status: 400 }
@@ -32,7 +32,13 @@ export async function GET(request: NextRequest) {
       select: {
         orderNumber: true,
         status: true,
+        email: true,
         firstName: true,
+        lastName: true,
+        phone: true,
+        address: true,
+        city: true,
+        postalCode: true,
         subtotal: true,
         shipping: true,
         discount: true,

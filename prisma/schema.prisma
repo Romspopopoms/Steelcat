@@ -95,7 +95,8 @@ model Order {
   stripePaymentIntent String?
   paidAt              DateTime?
 
-  // Dates importantes
+  // Expédition
+  trackingNumber      String?        // Numéro de suivi colis
   estimatedDelivery   DateTime?      // Date estimée de livraison
   shippedAt           DateTime?
   deliveredAt         DateTime?

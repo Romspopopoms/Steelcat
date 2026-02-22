@@ -191,6 +191,84 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   });
 }
 
+// Email de notification d'expédition
+export async function sendShippingNotificationEmail(data: {
+  orderNumber: string;
+  customerName: string;
+  email: string;
+  trackingNumber?: string | null;
+}) {
+  const transporter = getTransporter();
+
+  const trackingSection = data.trackingNumber
+    ? `
+      <div style="background-color: #F0FDF4; border-left: 4px solid #10B981; padding: 16px 20px; margin: 24px 0; border-radius: 4px;">
+        <p style="margin: 0; color: #065F46; font-size: 14px; line-height: 1.6;">
+          <strong style="display: block; margin-bottom: 8px;">📦 Numéro de suivi</strong>
+          <span style="font-family: monospace; font-size: 16px; font-weight: 700;">${escapeHtml(data.trackingNumber)}</span>
+        </p>
+      </div>
+    `
+    : '';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Votre commande a été expédiée</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+      <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); padding: 40px 32px; text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 12px;">🚚</div>
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Commande expédiée !</h1>
+          <p style="color: #cccccc; margin: 8px 0 0 0; font-size: 15px;">Votre colis est en route</p>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 32px;">
+          <p style="color: #4B5563; margin: 0 0 16px 0; font-size: 16px; line-height: 1.6;">
+            Bonjour <strong>${escapeHtml(data.customerName)}</strong>,
+          </p>
+          <p style="color: #4B5563; margin: 0 0 24px 0; font-size: 15px; line-height: 1.6;">
+            Votre commande <strong style="color: #000;">#${escapeHtml(data.orderNumber)}</strong> a été expédiée et est en route vers vous !
+          </p>
+
+          ${trackingSection}
+
+          <div style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 16px 20px; margin: 24px 0; border-radius: 4px;">
+            <p style="margin: 0; color: #1E40AF; font-size: 14px; line-height: 1.6;">
+              <strong>Délai estimé :</strong> 2-3 jours ouvrés à compter de l'expédition.
+            </p>
+          </div>
+
+          <p style="color: #6B7280; margin: 24px 0 8px 0; font-size: 14px; line-height: 1.6;">
+            Une question ? Contactez-nous à <a href="mailto:sav@steel-cat.com" style="color: #000; text-decoration: none; font-weight: 600;">sav@steel-cat.com</a>
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #F9FAFB; padding: 32px; text-align: center; border-top: 1px solid #E5E7EB;">
+          <p style="margin: 0 0 16px 0; color: #6B7280; font-size: 14px; font-weight: 600;">STEELCAT</p>
+          <p style="margin: 0 0 12px 0; color: #9CA3AF; font-size: 13px;">Litière Premium en Acier Inoxydable</p>
+          <p style="margin: 0; color: #9CA3AF; font-size: 12px;">© ${new Date().getFullYear()} SteelCat. Tous droits réservés.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: data.email,
+    subject: `🚚 Votre commande ${data.orderNumber} a été expédiée !`,
+    html,
+  });
+}
+
 // Email de notification de disponibilité pour précommandes
 export async function sendAvailabilityNotificationEmail(data: {
   orderNumber: string;

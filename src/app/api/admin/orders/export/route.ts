@@ -62,11 +62,10 @@ export async function GET(request: NextRequest) {
 
   // Sanitize and quote CSV values to prevent formula injection
   function csvField(value: string): string {
-    // Strip formula-triggering characters
-    let safe = value;
-    if (/^[=+\-@\t\r]/.test(safe)) {
-      safe = `'${safe}`;
-    }
+    // Remove formula-triggering characters entirely at start
+    let safe = value.replace(/^[=+\-@\t\r\n]+/, '');
+    // Also strip tab/newline characters anywhere (prevent CRLF injection)
+    safe = safe.replace(/[\t\r\n]/g, ' ');
     // Always double-quote, escaping internal quotes
     return `"${safe.replace(/"/g, '""')}"`;
   }

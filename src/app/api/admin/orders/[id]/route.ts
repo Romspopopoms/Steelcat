@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
-import { sendAvailabilityNotificationEmail } from '@/lib/email';
+import { sendAvailabilityNotificationEmail, sendShippingNotificationEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
 const updateOrderStatusSchema = z.object({
   status: z.enum(['PENDING', 'PAID', 'PRE_ORDER', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+  trackingNumber: z.string().max(100).optional(),
 });
 
 // Valid status transitions (state machine)
@@ -44,7 +45,7 @@ export async function PATCH(
         { status: 400 }
       );
     }
-    const { status } = parsed.data;
+    const { status, trackingNumber } = parsed.data;
 
     const order = await prisma.order.findUnique({
       where: { id },
@@ -103,10 +104,26 @@ export async function PATCH(
       data: {
         status,
         notificationSent: shouldNotify ? true : order.notificationSent,
+        ...(trackingNumber !== undefined && { trackingNumber }),
         ...(status === 'SHIPPED' && { shippedAt: new Date() }),
         ...(status === 'DELIVERED' && { deliveredAt: new Date() }),
       },
     });
+
+    // Envoyer l'email d'expédition quand le statut passe à SHIPPED
+    if (status === 'SHIPPED') {
+      try {
+        await sendShippingNotificationEmail({
+          orderNumber: order.orderNumber,
+          customerName: `${order.firstName} ${order.lastName}`,
+          email: order.email,
+          trackingNumber: trackingNumber || order.trackingNumber,
+        });
+        console.log(`Shipping notification sent for order ${order.orderNumber}`);
+      } catch (emailError) {
+        console.error('Error sending shipping notification:', emailError);
+      }
+    }
 
     // Envoyer l'email de disponibilité si nécessaire
     if (shouldNotify) {

@@ -21,7 +21,7 @@ export interface AdminSession {
 export async function createAdminToken(admin: AdminSession) {
   const token = await new SignJWT({ admin })
     .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('7d')
+    .setExpirationTime('24h')
     .setIssuedAt()
     .sign(getJwtSecret());
 
@@ -80,8 +80,8 @@ export async function setAdminSession(admin: AdminSession) {
   cookieStore.set('admin_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 jours
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 24, // 24 heures
     path: '/',
   });
 }

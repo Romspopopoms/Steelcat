@@ -22,12 +22,12 @@ async function main() {
 
   // Images du produit SteelCat
   const productImages = [
-    '/images/product1.png',
-    '/images/product2.png',
-    '/images/product3.png',
-    '/images/product4.png',
-    '/images/product5.png',
-    '/images/product6.png',
+    '/litiere-1.jpg',
+    '/litiere-2.jpg',
+    '/litiere-3.jpg',
+    '/litiere-4.jpg',
+    '/litiere-5.jpg',
+    '/litiere-6.jpg',
   ];
 
   // Créer les 3 variantes du produit SteelCat
