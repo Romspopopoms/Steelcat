@@ -23,7 +23,7 @@ const updateProductSchema = z.object({
   images: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
   popular: z.boolean().optional(),
-}).strict();
+}).strip();
 
 // GET /api/products/[id] - Récupère un produit spécifique
 export async function GET(

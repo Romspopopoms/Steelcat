@@ -19,6 +19,10 @@ export const metadata: Metadata = {
     title: "SteelCat - Litière Premium pour Chat",
     description: "Découvrez SteelCat, la litière premium qui allie élégance et performance pour le confort de votre chat.",
   },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   robots: {
     index: true,
     follow: true,
