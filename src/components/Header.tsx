@@ -17,6 +17,12 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 border-b border-gray-200 bg-white z-30">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:bg-black focus:text-white focus:top-2 focus:left-2 focus:rounded"
+      >
+        Aller au contenu principal
+      </a>
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

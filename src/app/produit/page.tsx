@@ -144,10 +144,37 @@ export default function ProductPage() {
     ? selectedProduct.promoLimit - selectedProduct.promoSold
     : null;
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: selectedProduct.name,
+    description: 'Litière premium en acier inoxydable avec système de tamis intégré.',
+    brand: {
+      '@type': 'Brand',
+      name: 'SteelCat',
+    },
+    image: selectedProduct.images[0] || '/litiere-1.jpg',
+    offers: {
+      '@type': 'Offer',
+      price: selectedProduct.currentPrice.toFixed(2),
+      priceCurrency: 'EUR',
+      availability: isOutOfStock
+        ? 'https://schema.org/OutOfStock'
+        : isPreOrder
+        ? 'https://schema.org/PreOrder'
+        : 'https://schema.org/InStock',
+      url: 'https://steel-cat.com/produit',
+    },
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main id="main-content" className="flex-grow bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Galerie d'images */}

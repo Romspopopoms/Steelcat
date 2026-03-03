@@ -88,12 +88,16 @@ export async function POST(request: NextRequest) {
           },
         });
 
+        // Batch fetch all products in one query instead of N+1
+        const productIds = [...new Set(order.items.map(item => item.productId))];
+        const products = await tx.product.findMany({
+          where: { id: { in: productIds } },
+        });
+        const productMap = new Map(products.map(p => [p.id, p]));
+
         // Mettre à jour les stocks et compteurs pour chaque produit
         for (const orderItem of order.items) {
-          // Re-fetch product inside transaction for fresh data
-          const product = await tx.product.findUnique({
-            where: { id: orderItem.productId },
-          });
+          const product = productMap.get(orderItem.productId);
           if (!product) continue;
 
           // Build consolidated update for this product

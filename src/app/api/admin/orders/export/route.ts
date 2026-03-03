@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,12 @@ const exportFilterSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const ip = getRateLimitIdentifier(request);
+  const { success } = rateLimit(`admin-export:${ip}`, { limit: 10, windowSeconds: 60 });
+  if (!success) {
+    return NextResponse.json({ error: 'Trop de requêtes' }, { status: 429 });
+  }
+
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });

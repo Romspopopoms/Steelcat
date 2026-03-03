@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
 import { sendAvailabilityNotificationEmail, sendShippingNotificationEmail } from '@/lib/email';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const ip = getRateLimitIdentifier(request);
+    const { success } = rateLimit(`admin-order-update:${ip}`, { limit: 30, windowSeconds: 60 });
+    if (!success) {
+      return NextResponse.json({ error: 'Trop de requêtes' }, { status: 429 });
+    }
+
     const admin = await getAdminSession();
     if (!admin) {
       return NextResponse.json(

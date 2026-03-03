@@ -16,9 +16,6 @@ const erasureConfirmSchema = z.object({
   token: z.string().length(64),
 });
 
-// In-memory store for erasure tokens (valid 1 hour)
-const erasureTokens = new Map<string, { email: string; expires: number }>();
-
 // POST /api/gdpr/erasure - Demande de suppression des données personnelles (RGPD Art. 17)
 export async function POST(request: NextRequest) {
   try {
@@ -38,8 +35,8 @@ export async function POST(request: NextRequest) {
     if (confirmParsed.success) {
       const { email, token } = confirmParsed.data;
 
-      const stored = erasureTokens.get(token);
-      if (!stored || stored.email !== email || stored.expires < Date.now()) {
+      const stored = await prisma.gdprErasureToken.findUnique({ where: { token } });
+      if (!stored || stored.email !== email || stored.expiresAt < new Date()) {
         return NextResponse.json(
           { error: 'Token invalide ou expiré. Veuillez refaire une demande.' },
           { status: 400 }
@@ -47,7 +44,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Token valid - proceed with anonymization
-      erasureTokens.delete(token);
+      await prisma.gdprErasureToken.delete({ where: { token } });
 
       // Use unique anonymous ID per batch to prevent cross-order correlation
       const anonId = crypto.randomBytes(8).toString('hex');
@@ -86,12 +83,18 @@ export async function POST(request: NextRequest) {
 
     // Generate verification token
     const token = crypto.randomBytes(32).toString('hex');
-    erasureTokens.set(token, { email, expires: Date.now() + 3600000 }); // 1h validity
+    await prisma.gdprErasureToken.create({
+      data: {
+        token,
+        email,
+        expiresAt: new Date(Date.now() + 3600000), // 1h validity
+      },
+    });
 
     // Clean up expired tokens
-    for (const [key, val] of erasureTokens) {
-      if (val.expires < Date.now()) erasureTokens.delete(key);
-    }
+    await prisma.gdprErasureToken.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
 
     // Send verification email (always send, even if no orders exist, to prevent enumeration)
     try {

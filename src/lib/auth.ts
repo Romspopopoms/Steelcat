@@ -2,14 +2,7 @@ import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
 import * as bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET environment variable is not defined');
-  }
-  return new TextEncoder().encode(secret);
-}
+import { getJwtSecret } from '@/lib/jwt-secret';
 
 export interface AdminSession {
   id: string;

@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = getRateLimitIdentifier(request);
+    const { success } = rateLimit(`admin-orders:${ip}`, { limit: 60, windowSeconds: 60 });
+    if (!success) {
+      return NextResponse.json({ error: 'Trop de requêtes' }, { status: 429 });
+    }
+
     const admin = await getAdminSession();
     if (!admin) {
       return NextResponse.json(

@@ -8,6 +8,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   NEXT_PUBLIC_BASE_URL: z.string().url('NEXT_PUBLIC_BASE_URL must be a valid URL'),
   SMTP_HOST: z.string().min(1, 'SMTP_HOST is required'),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).optional().default(587),
   SMTP_USER: z.string().min(1, 'SMTP_USER is required'),
   SMTP_PASS: z.string().min(1, 'SMTP_PASS is required'),
   SMTP_FROM: z.string().min(1, 'SMTP_FROM is required'),

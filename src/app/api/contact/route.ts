@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
-import { getTransporter } from '@/lib/email';
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+import { getTransporter, escapeHtml } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 

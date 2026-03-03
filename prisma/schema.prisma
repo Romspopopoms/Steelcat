@@ -9,8 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum ProductStatus {
@@ -67,6 +68,7 @@ model Product {
 
   @@index([status])
   @@index([weight])
+  @@index([popular, weight])
 }
 
 model Order {
@@ -116,6 +118,7 @@ model Order {
   @@index([isPreOrder])
   @@index([createdAt])
   @@index([email, status, createdAt])
+  @@index([status, createdAt])
 }
 
 model OrderItem {
@@ -170,4 +173,16 @@ model Coupon {
   expiresAt   DateTime?
   isActive    Boolean    @default(true)
   createdAt   DateTime   @default(now())
+
+  @@index([isActive])
+}
+
+model GdprErasureToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }

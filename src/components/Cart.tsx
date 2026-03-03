@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Cart() {
   const [mounted, setMounted] = useState(false);
+  const cartRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const {
     items,
     isOpen,
@@ -21,10 +23,30 @@ export default function Cart() {
     setMounted(true);
   }, []);
 
-  // Close cart on Escape key
+  // Close cart on Escape key + focus trap (Tab/Shift+Tab cycle)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       closeCart();
+      return;
+    }
+    if (e.key === 'Tab' && cartRef.current) {
+      const focusable = cartRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     }
   }, [closeCart]);
 
@@ -32,6 +54,8 @@ export default function Cart() {
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
+      // Focus close button on open
+      closeButtonRef.current?.focus();
       return () => {
         document.removeEventListener('keydown', handleKeyDown);
         document.body.style.overflow = '';
@@ -54,6 +78,7 @@ export default function Cart() {
 
       {/* Cart Sidebar */}
       <div
+        ref={cartRef}
         role="dialog"
         aria-modal="true"
         aria-label="Panier"
@@ -65,6 +90,7 @@ export default function Cart() {
             Panier ({itemCount} {itemCount > 1 ? 'articles' : 'article'})
           </h2>
           <button
+            ref={closeButtonRef}
             onClick={closeCart}
             className="text-gray-500 hover:text-black transition-colors"
             aria-label="Fermer le panier"

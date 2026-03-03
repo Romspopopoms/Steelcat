@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) return null;
-  return new TextEncoder().encode(secret);
-}
+import { getJwtSecret } from '@/lib/jwt-secret';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,9 +15,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Verify JWT signature in middleware
-    const secret = getJwtSecret();
-    if (!secret) {
+    let secret: Uint8Array;
+    try {
+      secret = getJwtSecret();
+    } catch {
       // JWT_SECRET not configured - deny access
       const loginUrl = new URL('/admin/login', request.url);
       return NextResponse.redirect(loginUrl);

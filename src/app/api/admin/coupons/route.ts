@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
+import { rateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,13 @@ const createCouponSchema = z.object({
 });
 
 // GET /api/admin/coupons - Liste des coupons
-export async function GET() {
+export async function GET(request: Request) {
+  const ip = getRateLimitIdentifier(request);
+  const { success } = rateLimit(`admin-coupons:${ip}`, { limit: 60, windowSeconds: 60 });
+  if (!success) {
+    return NextResponse.json({ error: 'Trop de requêtes' }, { status: 429 });
+  }
+
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
@@ -31,6 +38,12 @@ export async function GET() {
 
 // POST /api/admin/coupons - Créer un coupon
 export async function POST(request: NextRequest) {
+  const ip = getRateLimitIdentifier(request);
+  const { success } = rateLimit(`admin-coupons-write:${ip}`, { limit: 30, windowSeconds: 60 });
+  if (!success) {
+    return NextResponse.json({ error: 'Trop de requêtes' }, { status: 429 });
+  }
+
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
@@ -92,6 +105,12 @@ const updateCouponSchema = z.object({
 
 // PATCH /api/admin/coupons - Modifier un coupon
 export async function PATCH(request: NextRequest) {
+  const ip = getRateLimitIdentifier(request);
+  const { success } = rateLimit(`admin-coupons-write:${ip}`, { limit: 30, windowSeconds: 60 });
+  if (!success) {
+    return NextResponse.json({ error: 'Trop de requêtes' }, { status: 429 });
+  }
+
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
